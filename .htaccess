@@ -1,0 +1,23 @@
+<IfModule mod_rewrite.c>
+
+    # activate URL rewriting
+    RewriteEngine on
+
+    # do not rewrite links to the documentation, assets and public files
+    RewriteCond $1 !^(resources|system|application)
+
+    # do not rewrite for php files in the document root, robots.txt or the maintenance page
+    RewriteCond $1 !^([^\..]+\.php|robots\.txt)
+
+    # but rewrite everything else
+    RewriteRule ^(.*)$ index.php/$1 [L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+
+    # If we don't have mod_rewrite installed, all 404's
+    # can be sent to index.php, and everything works as normal.
+
+    ErrorDocument 404 index.php
+
+</IfModule> 
