@@ -6,4 +6,5 @@ function extjs_output($data = array(), $content_type = 'json') {
 		header('Content-type: application/json');
 	}
 	echo json_encode($data);
+	exit;
 }

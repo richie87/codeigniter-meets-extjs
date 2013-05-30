@@ -21,7 +21,7 @@ Ext.define('CImeetsExtJS.model.Movie', {
     idProperty: 'id',
     
     proxy: {
-        type: 'ajax',
+        type: 'custProxy',
         api: {
         	create: 'movies/create', 
             read: 'movies/read',

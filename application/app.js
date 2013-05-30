@@ -26,13 +26,41 @@ Ext.require('Ext.data.StoreManager', function() {
                     toast = Ext.core.DomHelper.append(panel, '<div class="msg"><h3>' + message.headline.toUpperCase() + '</h3><p>' + (operation.resultSet.message || message.text) + '</p></div>', true);
 
                 toast.hide();
-                toast.slideIn('t').ghost("t", {
+                toast.slideIn('t').ghost('t', {
                     delay: 2000,
                     remove: true
                 });
             }
         });
     });
+});
+
+Ext.define('CImeetsExtJS.data.proxy', {
+    extend: 'Ext.data.proxy.Ajax',
+    alias: 'proxy.custProxy',
+    
+    listeners: {
+        exception: function (proxy, request) {
+            if (request.responseText != undefined) {
+                responseObj = Ext.decode(request.responseText,true);
+                if (responseObj != null && responseObj.message != undefined) {
+					Ext.Msg.show({
+						title: 'Error (' + responseObj.code + ')',
+						msg: responseObj.message,
+						buttons: Ext.Msg.OK,
+						icon: Ext.Msg.ERROR,
+						fn: function() {          
+							if (responseObj.code == 401) window.location = 'auth';
+						}
+					});
+                } else {
+                    Ext.Msg.alert('Error', 'Unknown error: The server did not send any information about the error.');
+                }
+            } else {
+                Ext.Msg.alert('Error', 'Unknown error: Unable to understand the response from the server');
+            }
+        }
+    }
 });
 
 Ext.application({
