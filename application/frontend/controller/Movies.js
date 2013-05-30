@@ -52,7 +52,7 @@ Ext.define('CImeetsExtJS.controller.Movies', {
 			record = grid.getSelectionModel().getLastSelected();
        
         if (item.action === 'update-movie') {
-            this.updateMovie(grid, record);
+            this.addEditMovie(grid, record);
         }
         
         if (item.action === 'delete-movie') {
