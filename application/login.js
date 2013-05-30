@@ -16,7 +16,15 @@ Ext.onReady(function(){
 			fieldLabel: 'Password', 
 			name: 'password', 
 			inputType: 'password', 
-			allowBlank: false
+			allowBlank: false,
+			enableKeyEvents: true,
+			listeners: {	
+				keypress:function(textfield, e) {
+					if (e.button == 12) {
+						doLogin();
+					}
+				}
+			}
 		}],
 
 		buttons:[{ 
@@ -25,27 +33,33 @@ Ext.onReady(function(){
 			id: 'submit',
 			width:220,
 			handler: function(){
-				login.getForm().submit({ 
-					method: 'POST', 
-					waitTitle: 'Connecting', 
-					waitMsg: 'Sending data...',
-					success: function(){
-						var redirect = '/'; 
-						window.location = redirect;
-					},
-					failure: function(form, action){
-						if(action.failureType == 'server'){ 
-							Ext.Msg.alert('Login failed!', 'Login data is incorrect!'); 
-						} else { 
-							Ext.Msg.alert('Warning!', 'The authentication server is not responding : ' + action.response.responseText); 
-						}
-						
-						login.getForm().reset(); 
-					} 
-				}); 
+				doLogin();
 			}
 		}]
     });
+	
+	function doLogin() {
+		if (login.getForm().isValid()) {
+			login.getForm().submit({
+				method: 'POST', 
+				waitTitle: 'Connecting', 
+				waitMsg: 'Sending data...',
+				success: function(){
+					var redirect = '/'; 
+					window.location = redirect;
+				},
+				failure: function(form, action){
+					if(action.failureType == 'server'){ 
+						Ext.Msg.alert('Login failed!', 'Login data is incorrect!'); 
+					} else { 
+						Ext.Msg.alert('Warning!', 'The authentication server is not responding : ' + action.response.responseText); 
+					}
+					
+					login.getForm().reset(); 
+				} 
+			});
+		}
+	}
 	
     var win = new Ext.Window({
         layout: 'fit',

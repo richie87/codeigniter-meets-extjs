@@ -18,6 +18,17 @@ Ext.define('CImeetsExtJS.view.Surface', {
             },{
 				xtype: 'movie-surface',
 				region: 'center'
+			}],
+			
+			dockedItems: [{
+                xtype: 'toolbar',
+                dock: 'bottom',
+                items: ['->', {
+                    xtype: 'button',
+                    text: 'Logout',
+                    iconCls: 'fam door',
+                    action: 'logout'
+                }]
 			}]
         });
 

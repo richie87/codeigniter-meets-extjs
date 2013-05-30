@@ -50,7 +50,7 @@ Ext.define('CImeetsExtJS.data.proxy', {
 						buttons: Ext.Msg.OK,
 						icon: Ext.Msg.ERROR,
 						fn: function() {          
-							if (responseObj.code == 401) window.location = 'auth';
+							if (responseObj.code == 401) document.location.href = '/auth';
 						}
 					});
                 } else {
