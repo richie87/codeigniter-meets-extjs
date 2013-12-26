@@ -1,3 +1,23 @@
+/*
+This file is part of Ext JS 4.2
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-05-16 14:36:50 (f9be68accb407158ba2b1be2c226a6ce1f649314)
+*/
 /**
  * Provides precise pixel measurements for blocks of text so that you can determine exactly how high and
  * wide, in pixels, a given block of text will be. Note that when measuring text, it should be plain text and
@@ -52,13 +72,18 @@ Ext.define('Ext.util.TextMetrics', {
      * @param {Number} [fixedWidth] A fixed width to apply to the measuring element.
      */
     constructor: function(bindTo, fixedWidth){
-        var measure = this.measure = Ext.getBody().createChild({
-            cls: Ext.baseCSSPrefix + 'textmetrics'
-        });
-        this.el = Ext.get(bindTo);
+        var me = this,
+            measure = Ext.getBody().createChild({
+                cls: Ext.baseCSSPrefix + 'textmetrics'
+            });
+            
+        me.measure = measure; 
+        if (bindTo) {
+            me.bind(bindTo);
+        }
         
         measure.position('absolute');
-        measure.setLeftTop(-1000, -1000);
+        measure.setLocalXY(-1000, -1000);
         measure.hide();
 
         if (fixedWidth) {

@@ -1,3 +1,23 @@
+/*
+This file is part of Ext JS 4.2
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-05-16 14:36:50 (f9be68accb407158ba2b1be2c226a6ce1f649314)
+*/
 /**
  * Polish Translations
  * By vbert 17-April-2007
@@ -5,38 +25,6 @@
  * Encoding: utf-8
  */
 Ext.onReady(function() {
-    var cm = Ext.ClassManager,
-        exists = Ext.Function.bind(cm.get, cm);
-
-    if (Ext.Updater) {
-        Ext.Updater.defaults.indicatorText = '<div class="loading-indicator">Wczytywanie danych...</div>';
-    }
-
-    Ext.define("Ext.locale.pl.view.View", {
-        override: "Ext.view.View",
-        emptyText: ""
-    });
-
-    Ext.define("Ext.locale.pl.grid.Panel", {
-        override: "Ext.grid.Panel",
-        ddText: "{0} wybrano wiersze(y)"
-    });
-
-    Ext.define("Ext.locale.pl.TabPanelItem", {
-        override: "Ext.TabPanelItem",
-        closeText: "Zamknij zakładkę"
-    });
-
-    Ext.define("Ext.locale.pl.form.field.Base", {
-        override: "Ext.form.field.Base",
-        invalidText: "Wartość tego pola jest niewłaściwa"
-    });
-
-    // changing the msg text below will affect the LoadMask
-    Ext.define("Ext.locale.pl.view.AbstractView", {
-        override: "Ext.view.AbstractView",
-        msg: "Wczytywanie danych..."
-    });
 
     if (Ext.Date) {
         Ext.Date.monthNames = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
@@ -87,16 +75,8 @@ Ext.onReady(function() {
             }
         };
     }
-    if (Ext.MessageBox) {
-        Ext.MessageBox.buttonText = {
-            ok: "OK",
-            cancel: "Anuluj",
-            yes: "Tak",
-            no: "Nie"
-        };
-    }
 
-    if (exists('Ext.util.Format')) {
+    if (Ext.util && Ext.util.Format) {
         Ext.apply(Ext.util.Format, {
             thousandSeparator: '.',
             decimalSeparator: ',',
@@ -105,190 +85,228 @@ Ext.onReady(function() {
             dateFormat: 'Y-m-d'
         });
     }
-
-    Ext.define("Ext.locale.pl.picker.Date", {
-        override: "Ext.picker.Date",
-        startDay: 1,
-        todayText: "Dzisiaj",
-        minText: "Data jest wcześniejsza od daty minimalnej",
-        maxText: "Data jest późniejsza od daty maksymalnej",
-        disabledDaysText: "",
-        disabledDatesText: "",
-        monthNames: Ext.Date.monthNames,
-        dayNames: Ext.Date.dayNames,
-        nextText: "Następny miesiąc (Control+StrzałkaWPrawo)",
-        prevText: "Poprzedni miesiąc (Control+StrzałkaWLewo)",
-        monthYearText: "Wybierz miesiąc (Control+Up/Down aby zmienić rok)",
-        todayTip: "{0} (Spacja)",
-        format: "Y-m-d",
-        startDay: 1
-    });
-
-    Ext.define("Ext.locale.pl.picker.Month", {
-        override: "Ext.picker.Month",
-        okText: "&#160;OK&#160;",
-        cancelText: "Anuluj"
-    });
-
-    Ext.define("Ext.locale.pl.toolbar.Paging", {
-        override: "Ext.PagingToolbar",
-        beforePageText: "Strona",
-        afterPageText: "z {0}",
-        firstText: "Pierwsza strona",
-        prevText: "Poprzednia strona",
-        nextText: "Następna strona",
-        lastText: "Ostatnia strona",
-        refreshText: "Odśwież",
-        displayMsg: "Wyświetlono {0} - {1} z {2}",
-        emptyMsg: "Brak danych do wyświetlenia"
-    });
-
-    Ext.define("Ext.locale.pl.form.field.Text", {
-        override: "Ext.form.field.Text",
-        minLengthText: "Minimalna ilość znaków dla tego pola to {0}",
-        maxLengthText: "Maksymalna ilość znaków dla tego pola to {0}",
-        blankText: "To pole jest wymagane",
-        regexText: "",
-        emptyText: null
-    });
-
-    Ext.define("Ext.locale.pl.form.field.Number", {
-        override: "Ext.form.field.Number",
-        minText: "Minimalna wartość dla tego pola to {0}",
-        maxText: "Maksymalna wartość dla tego pola to {0}",
-        nanText: "{0} to nie jest właściwa wartość"
-    });
-
-    Ext.define("Ext.locale.pl.form.field.Date", {
-        override: "Ext.form.field.Date",
-        disabledDaysText: "Wyłączony",
-        disabledDatesText: "Wyłączony",
-        minText: "Data w tym polu musi być późniejsza od {0}",
-        maxText: "Data w tym polu musi być wcześniejsza od {0}",
-        invalidText: "{0} to nie jest prawidłowa data - prawidłowy format daty {1}",
-        format: "Y-m-d",
-        altFormats: "m/d/Y|m-d-y|m-d-Y|m/d|m-d|md|mdy|mdY|d|Y-m-d"
-    });
-
-    Ext.define("Ext.locale.pl.form.field.ComboBox", {
-        override: "Ext.form.field.ComboBox",
-        valueNotFoundText: undefined
-    }, function() {
-        Ext.apply(Ext.form.field.ComboBox.prototype.defaultListConfig, {
-            loadingText: "Wczytuję..."
-        });
-    });
-
-    if (exists('Ext.form.field.VTypes')) {
-        Ext.apply(Ext.form.field.VTypes, {
-            emailText: 'To pole wymaga podania adresu e-mail w formacie: "nazwa@domena.pl"',
-            urlText: 'To pole wymaga podania adresu strony www w formacie: "http:/' + '/www.domena.pl"',
-            alphaText: 'To pole wymaga podania tylko liter i _',
-            alphanumText: 'To pole wymaga podania tylko liter, cyfr i _'
-        });
-    }
-
-    Ext.define("Ext.locale.pl.form.field.HtmlEditor", {
-        override: "Ext.form.field.HtmlEditor",
-        createLinkText: 'Wprowadź adres URL strony:'
-    }, function() {
-        Ext.apply(Ext.form.field.HtmlEditor.prototype, {
-            buttonTips: {
-                bold: {
-                    title: 'Pogrubienie (Ctrl+B)',
-                    text: 'Ustaw styl zaznaczonego tekstu na pogrubiony.',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                italic: {
-                    title: 'Kursywa (Ctrl+I)',
-                    text: 'Ustaw styl zaznaczonego tekstu na kursywę.',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                underline: {
-                    title: 'Podkreślenie (Ctrl+U)',
-                    text: 'Podkreśl zaznaczony tekst.',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                increasefontsize: {
-                    title: 'Zwiększ czcionkę',
-                    text: 'Zwiększ rozmiar czcionki.',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                decreasefontsize: {
-                    title: 'Zmniejsz czcionkę',
-                    text: 'Zmniejsz rozmiar czcionki.',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                backcolor: {
-                    title: 'Wyróżnienie',
-                    text: 'Zmień kolor wyróżnienia zaznaczonego tekstu.',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                forecolor: {
-                    title: 'Kolor czcionki',
-                    text: 'Zmień kolor zaznaczonego tekstu.',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                justifyleft: {
-                    title: 'Do lewej',
-                    text: 'Wyrównaj tekst do lewej.',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                justifycenter: {
-                    title: 'Wyśrodkuj',
-                    text: 'Wyrównaj tekst do środka.',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                justifyright: {
-                    title: 'Do prawej',
-                    text: 'Wyrównaj tekst do prawej.',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                insertunorderedlist: {
-                    title: 'Lista wypunktowana',
-                    text: 'Rozpocznij listę wypunktowaną.',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                insertorderedlist: {
-                    title: 'Lista numerowana',
-                    text: 'Rozpocznij listę numerowaną.',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                createlink: {
-                    title: 'Hiperłącze',
-                    text: 'Przekształć zaznaczony tekst w hiperłącze.',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                sourceedit: {
-                    title: 'Edycja źródła',
-                    text: 'Przełącz w tryb edycji źródła.',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                }
-            }
-        });
-    });
-
-    Ext.define("Ext.locale.pl.grid.header.Container", {
-        override: "Ext.grid.header.Container",
-        sortAscText: "Sortuj rosnąco",
-        sortDescText: "Sortuj malejąco",
-        lockText: "Zablokuj kolumnę",
-        unlockText: "Odblokuj kolumnę",
-        columnsText: "Kolumny"
-    });
-
-    Ext.define("Ext.locale.pl.grid.GroupingFeature", {
-        override: "Ext.grid.GroupingFeature",
-        emptyGroupText: '(None)',
-        groupByText: 'Grupuj po tym polu',
-        showGroupsText: 'Pokaż w grupach'
-    });
-
-    Ext.define("Ext.locale.pl.grid.PropertyColumnModel", {
-        override: "Ext.grid.PropertyColumnModel",
-        nameText: "Nazwa",
-        valueText: "Wartość",
-        dateFormat: "Y-m-d"
-    });
-
 });
+
+Ext.define("Ext.locale.pl.view.View", {
+    override: "Ext.view.View",
+    emptyText: ""
+});
+
+Ext.define("Ext.locale.pl.grid.plugin.DragDrop", {
+    override: "Ext.grid.plugin.DragDrop",
+    dragText: "{0} wybrano wiersze(y)"
+});
+
+Ext.define("Ext.locale.pl.tab.Tab", {
+    override: "Ext.tab.Tab",
+    closeText: "Zamknij zakładkę"
+});
+
+Ext.define("Ext.locale.pl.form.field.Base", {
+    override: "Ext.form.field.Base",
+    invalidText: "Wartość tego pola jest niewłaściwa"
+});
+
+// changing the msg text below will affect the LoadMask
+Ext.define("Ext.locale.pl.view.AbstractView", {
+    override: "Ext.view.AbstractView",
+    loadingText: "Wczytywanie danych..."
+});
+
+Ext.define("Ext.locale.pl.picker.Date", {
+    override: "Ext.picker.Date",
+    startDay: 1,
+    todayText: "Dzisiaj",
+    minText: "Data jest wcześniejsza od daty minimalnej",
+    maxText: "Data jest późniejsza od daty maksymalnej",
+    disabledDaysText: "",
+    disabledDatesText: "",
+    nextText: "Następny miesiąc (Control+StrzałkaWPrawo)",
+    prevText: "Poprzedni miesiąc (Control+StrzałkaWLewo)",
+    monthYearText: "Wybierz miesiąc (Control+Up/Down aby zmienić rok)",
+    todayTip: "{0} (Spacja)",
+    format: "Y-m-d",
+    startDay: 1
+});
+
+Ext.define("Ext.locale.pl.picker.Month", {
+    override: "Ext.picker.Month",
+    okText: "&#160;OK&#160;",
+    cancelText: "Anuluj"
+});
+
+Ext.define("Ext.locale.pl.toolbar.Paging", {
+    override: "Ext.PagingToolbar",
+    beforePageText: "Strona",
+    afterPageText: "z {0}",
+    firstText: "Pierwsza strona",
+    prevText: "Poprzednia strona",
+    nextText: "Następna strona",
+    lastText: "Ostatnia strona",
+    refreshText: "Odśwież",
+    displayMsg: "Wyświetlono {0} - {1} z {2}",
+    emptyMsg: "Brak danych do wyświetlenia"
+});
+
+Ext.define("Ext.locale.pl.form.field.Text", {
+    override: "Ext.form.field.Text",
+    minLengthText: "Minimalna ilość znaków dla tego pola to {0}",
+    maxLengthText: "Maksymalna ilość znaków dla tego pola to {0}",
+    blankText: "To pole jest wymagane",
+    regexText: "",
+    emptyText: null
+});
+
+Ext.define("Ext.locale.pl.form.field.Number", {
+    override: "Ext.form.field.Number",
+    minText: "Minimalna wartość dla tego pola to {0}",
+    maxText: "Maksymalna wartość dla tego pola to {0}",
+    nanText: "{0} to nie jest właściwa wartość"
+});
+
+Ext.define("Ext.locale.pl.form.field.Date", {
+    override: "Ext.form.field.Date",
+    disabledDaysText: "Wyłączony",
+    disabledDatesText: "Wyłączony",
+    minText: "Data w tym polu musi być późniejsza od {0}",
+    maxText: "Data w tym polu musi być wcześniejsza od {0}",
+    invalidText: "{0} to nie jest prawidłowa data - prawidłowy format daty {1}",
+    format: "Y-m-d",
+    altFormats: "m/d/Y|m-d-y|m-d-Y|m/d|m-d|md|mdy|mdY|d|Y-m-d"
+});
+
+Ext.define("Ext.locale.pl.form.field.ComboBox", {
+    override: "Ext.form.field.ComboBox",
+    valueNotFoundText: undefined
+}, function() {
+    Ext.apply(Ext.form.field.ComboBox.prototype.defaultListConfig, {
+        loadingText: "Wczytuję..."
+    });
+});
+
+Ext.define("Ext.locale.pl.form.field.VTypes", {
+    override: "Ext.form.field.VTypes",
+    emailText: 'To pole wymaga podania adresu e-mail w formacie: "nazwa@domena.pl"',
+    urlText: 'To pole wymaga podania adresu strony www w formacie: "http:/' + '/www.domena.pl"',
+    alphaText: 'To pole wymaga podania tylko liter i _',
+    alphanumText: 'To pole wymaga podania tylko liter, cyfr i _'
+});
+
+Ext.define("Ext.locale.pl.form.field.HtmlEditor", {
+    override: "Ext.form.field.HtmlEditor",
+    createLinkText: 'Wprowadź adres URL strony:'
+}, function() {
+    Ext.apply(Ext.form.field.HtmlEditor.prototype, {
+        buttonTips: {
+            bold: {
+                title: 'Pogrubienie (Ctrl+B)',
+                text: 'Ustaw styl zaznaczonego tekstu na pogrubiony.',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            italic: {
+                title: 'Kursywa (Ctrl+I)',
+                text: 'Ustaw styl zaznaczonego tekstu na kursywę.',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            underline: {
+                title: 'Podkreślenie (Ctrl+U)',
+                text: 'Podkreśl zaznaczony tekst.',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            increasefontsize: {
+                title: 'Zwiększ czcionkę',
+                text: 'Zwiększ rozmiar czcionki.',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            decreasefontsize: {
+                title: 'Zmniejsz czcionkę',
+                text: 'Zmniejsz rozmiar czcionki.',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            backcolor: {
+                title: 'Wyróżnienie',
+                text: 'Zmień kolor wyróżnienia zaznaczonego tekstu.',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            forecolor: {
+                title: 'Kolor czcionki',
+                text: 'Zmień kolor zaznaczonego tekstu.',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            justifyleft: {
+                title: 'Do lewej',
+                text: 'Wyrównaj tekst do lewej.',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            justifycenter: {
+                title: 'Wyśrodkuj',
+                text: 'Wyrównaj tekst do środka.',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            justifyright: {
+                title: 'Do prawej',
+                text: 'Wyrównaj tekst do prawej.',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            insertunorderedlist: {
+                title: 'Lista wypunktowana',
+                text: 'Rozpocznij listę wypunktowaną.',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            insertorderedlist: {
+                title: 'Lista numerowana',
+                text: 'Rozpocznij listę numerowaną.',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            createlink: {
+                title: 'Hiperłącze',
+                text: 'Przekształć zaznaczony tekst w hiperłącze.',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            sourceedit: {
+                title: 'Edycja źródła',
+                text: 'Przełącz w tryb edycji źródła.',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            }
+        }
+    });
+});
+
+Ext.define("Ext.locale.pl.grid.header.Container", {
+    override: "Ext.grid.header.Container",
+    sortAscText: "Sortuj rosnąco",
+    sortDescText: "Sortuj malejąco",
+    lockText: "Zablokuj kolumnę",
+    unlockText: "Odblokuj kolumnę",
+    columnsText: "Kolumny"
+});
+
+Ext.define("Ext.locale.pl.grid.GroupingFeature", {
+    override: "Ext.grid.GroupingFeature",
+    emptyGroupText: '(None)',
+    groupByText: 'Grupuj po tym polu',
+    showGroupsText: 'Pokaż w grupach'
+});
+
+Ext.define("Ext.locale.pl.grid.PropertyColumnModel", {
+    override: "Ext.grid.PropertyColumnModel",
+    nameText: "Nazwa",
+    valueText: "Wartość",
+    dateFormat: "Y-m-d"
+});
+
+Ext.define("Ext.locale.pl.window.MessageBox", {
+    override: "Ext.window.MessageBox",
+    buttonText: {
+        ok: "OK",
+        cancel: "Anuluj",
+        yes: "Tak",
+        no: "Nie"
+    }    
+});
+
+// This is needed until we can refactor all of the locales into individual files
+Ext.define("Ext.locale.pl.Component", {	
+    override: "Ext.Component"
+});
+

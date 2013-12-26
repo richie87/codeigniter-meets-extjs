@@ -1,43 +1,31 @@
+/*
+This file is part of Ext JS 4.2
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-05-16 14:36:50 (f9be68accb407158ba2b1be2c226a6ce1f649314)
+*/
 /**
  * Hebrew Translations
  * By spartacus (from forums) 06-12-2007
  */
 Ext.onReady(function() {
-    var cm = Ext.ClassManager,
-        exists = Ext.Function.bind(cm.get, cm);
-
-    if (Ext.Updater) {
-        Ext.Updater.defaults.indicatorText = '<div class="loading-indicator">...θεςο</div>';
-    }
-
-    Ext.define("Ext.locale.he.view.View", {
-        override: "Ext.view.View",
-        emptyText: ""
-    });
-
-    Ext.define("Ext.locale.he.grid.Panel", {
-        override: "Ext.grid.Panel",
-        ddText: "ωεψεϊ παηψεϊ {0}"
-    });
-
-    Ext.define("Ext.locale.he.TabPanelItem", {
-        override: "Ext.TabPanelItem",
-        closeText: "ρβεψ μωεπιϊ"
-    });
-
-    Ext.define("Ext.locale.he.form.field.Base", {
-        override: "Ext.form.field.Base",
-        invalidText: "δςψκ αωγδ ζδ ωβει"
-    });
-
-    // changing the msg text below will affect the LoadMask
-    Ext.define("Ext.locale.he.view.AbstractView", {
-        override: "Ext.view.AbstractView",
-        msg: "...θεςο"
-    });
 
     if (Ext.Date) {
-        Ext.Date.monthNames = ["ιπεΰψ", "ταψεΰψ", "ξψυ", "ΰτψιμ", "ξΰι", "ιεπι", "ιεμι", "ΰεβερθ", "ρτθξαψ", "ΰεχθεαψ", "πεαξαψ", "γφξαψ"];
+        Ext.Date.monthNames = ["Χ™Χ Χ•ΧΧ¨", "Χ¤Χ‘Χ¨Χ•ΧΧ¨", "ΧΧ¨Χ¥", "ΧΧ¤Χ¨Χ™Χ", "ΧΧΧ™", "Χ™Χ•Χ Χ™", "Χ™Χ•ΧΧ™", "ΧΧ•Χ’Χ•Χ΅Χ", "Χ΅Χ¤ΧΧΧ‘Χ¨", "ΧΧ•Χ§ΧΧ•Χ‘Χ¨", "Χ Χ•Χ‘ΧΧ‘Χ¨", "Χ“Χ¦ΧΧ‘Χ¨"];
 
         Ext.Date.getShortMonthName = function(month) {
             return Ext.Date.monthNames[month].substring(0, 3);
@@ -62,23 +50,14 @@ Ext.onReady(function() {
             return Ext.Date.monthNumbers[name.substring(0, 1).toUpperCase() + name.substring(1, 3).toLowerCase()];
         };
 
-        Ext.Date.dayNames = ["ΰ", "α", "β", "γ", "δ", "ε", "ω"];
+        Ext.Date.dayNames = ["Χ", "Χ‘", "Χ’", "Χ“", "Χ”", "Χ•", "Χ©"];
 
         Ext.Date.getShortDayName = function(day) {
             return Ext.Date.dayNames[day].substring(0, 3);
         };
     }
 
-    if (Ext.MessageBox) {
-        Ext.MessageBox.buttonText = {
-            ok: "ΰιωεψ",
-            cancel: "αιθεμ",
-            yes: "λο",
-            no: "μΰ"
-        };
-    }
-
-    if (exists('Ext.util.Format')) {
+    if (Ext.util && Ext.util.Format) {
         Ext.apply(Ext.util.Format, {
             thousandSeparator: '.',
             decimalSeparator: ',',
@@ -87,189 +66,227 @@ Ext.onReady(function() {
             dateFormat: 'd/m/Y'
         });
     }
-
-    Ext.define("Ext.locale.he.picker.Date", {
-        override: "Ext.picker.Date",
-        todayText: "διεν",
-        minText: ".ϊΰψικ ζδ ημ χεγν μϊΰψικ δδϊημϊι ωπχας",
-        maxText: ".ϊΰψικ ζδ ημ μΰηψ δϊΰψικ δρετι ωπχας",
-        disabledDaysText: "",
-        disabledDatesText: "",
-        monthNames: Ext.Date.monthNames,
-        dayNames: Ext.Date.dayNames,
-        nextText: '(Control+Right) δηεγω δαΰ',
-        prevText: '(Control+Left) δηεγω δχεγν',
-        monthYearText: '(μαηιψϊ ωπδ Control+Up/Down) αηψ ηεγω',
-        todayTip: "ξχω ψεεη) {0})",
-        format: "d/m/Y",
-        startDay: 0
-    });
-
-    Ext.define("Ext.locale.he.picker.Month", {
-        override: "Ext.picker.Month",
-        okText: "&#160;ΰιωεψ&#160;",
-        cancelText: "αιθεμ"
-    });
-
-    Ext.define("Ext.locale.he.toolbar.Paging", {
-        override: "Ext.PagingToolbar",
-        beforePageText: "ςξεγ",
-        afterPageText: "{0} ξϊεκ",
-        firstText: "ςξεγ ψΰωεο",
-        prevText: "ςξεγ χεγν",
-        nextText: "ςξεγ δαΰ",
-        lastText: "ςξεγ ΰηψεο",
-        refreshText: "ψςπο",
-        displayMsg: "ξφιβ {0} - {1} ξϊεκ {2}",
-        emptyMsg: 'ΰιο ξιγς μδφβδ'
-    });
-
-    Ext.define("Ext.locale.he.form.field.Text", {
-        override: "Ext.form.field.Text",
-        minLengthText: "{0} δΰεψκ δξιπιξΰμι μωγδ ζδ δεΰ",
-        maxLengthText: "{0} δΰεψκ δξιψαι μωγδ ζδ δεΰ",
-        blankText: "ωγδ ζδ δλψηι",
-        regexText: "",
-        emptyText: null
-    });
-
-    Ext.define("Ext.locale.he.form.field.Number", {
-        override: "Ext.form.field.Number",
-        minText: "{0} δςψκ δξιπιξΰμι μωγδ ζδ δεΰ",
-        maxText: "{0} δςψκ δξιψαι μωγδ ζδ δεΰ",
-        nanText: "δεΰ μΰ ξρτψ {0}"
-    });
-
-    Ext.define("Ext.locale.he.form.field.Date", {
-        override: "Ext.form.field.Date",
-        disabledDaysText: "ξπεθψμ",
-        disabledDatesText: "ξπεθψμ",
-        minText: "{0} δϊΰψικ αωγδ ζδ ηιια μδιεϊ μΰηψ",
-        maxText: "{0} δϊΰψικ αωγδ ζδ ηιια μδιεϊ μτπι",
-        invalidText: "{1} δεΰ μΰ ϊΰψικ ϊχπι - ηιια μδιεϊ ατεψξθ {0}",
-        format: "m/d/y",
-        altFormats: "m/d/Y|m-d-y|m-d-Y|m/d|m-d|md|mdy|mdY|d|Y-m-d"
-    });
-
-    Ext.define("Ext.locale.he.form.field.ComboBox", {
-        override: "Ext.form.field.ComboBox",
-        valueNotFoundText: undefined
-    }, function() {
-        Ext.apply(Ext.form.field.ComboBox.prototype.defaultListConfig, {
-            loadingText: "...θεςο"
-        });
-    });
-
-    if (exists('Ext.form.field.VTypes')) {
-        Ext.apply(Ext.form.field.VTypes, {
-            emailText: '"user@example.com" ωγδ ζδ φψικ μδιεϊ λϊεαϊ γεΰψ ΰμχθψεπι ατεψξθ',
-            urlText: '"http:/' + '/www.example.com" ωγδ ζδ φψικ μδιεϊ λϊεαϊ ΰιπθψπθ ατεψξθ',
-            alphaText: '_ωγδ ζδ ιλεμ μδλιμ ψχ ΰεϊιεϊ ε',
-            alphanumText: '_ωγδ ζδ ιλεμ μδλιμ ψχ ΰεϊιεϊ, ξρτψιν ε'
-        });
-    }
-
-    Ext.define("Ext.locale.he.form.field.HtmlEditor", {
-        override: "Ext.form.field.HtmlEditor",
-        createLinkText: ':ΰπΰ δχμγ ΰϊ λϊεαϊ δΰιπθψπθ ςαεψ δχιωεψ'
-    }, function() {
-        Ext.apply(Ext.form.field.HtmlEditor.prototype, {
-            buttonTips: {
-                bold: {
-                    title: '(Ctrl+B) ξεγβω',
-                    text: '.δγβω ΰϊ δθχρθ δπαηψ',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                italic: {
-                    title: '(Ctrl+I) πθει',
-                    text: '.δθδ ΰϊ δθχρθ δπαηψ',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                underline: {
-                    title: '(Ctrl+U) χε ϊηϊι',
-                    text: '.δερσ χο ϊηϊι ςαεψ δθχρθ δπαηψ',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                increasefontsize: {
-                    title: 'δβγμ θχρθ',
-                    text: '.δβγμ βετο ςαεψ δθχρθ δπαηψ',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                decreasefontsize: {
-                    title: 'δχθο θχρθ',
-                    text: '.δχθο βετο ςαεψ δθχρθ δπαηψ',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                backcolor: {
-                    title: 'φας ψχς μθχρθ',
-                    text: '.ωπδ ΰϊ φας δψχς ςαεψ δθχρθ δπαηψ',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                forecolor: {
-                    title: 'φας βετο',
-                    text: '.ωπδ ΰϊ φας δβετο ςαεψ δθχρθ δπαηψ',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                justifyleft: {
-                    title: 'ιωεψ μωξΰμ',
-                    text: '.ιωψ ωξΰμδ ΰϊ δθχρθ δπαηψ',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                justifycenter: {
-                    title: 'ιωεψ μξψλζ',
-                    text: '.ιωψ μξψλζ ΰϊ δθχρθ δπαηψ',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                justifyright: {
-                    title: 'ιωεψ μιξιο',
-                    text: '.ιωψ ιξιπδ ΰϊ δθχρθ δπαηψ',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                insertunorderedlist: {
-                    title: 'ψωιξϊ πχεγεϊ',
-                    text: '.δϊημ ψωιξϊ πχεγεϊ',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                insertorderedlist: {
-                    title: 'ψωιξδ ξξερτψϊ',
-                    text: '.δϊημ ψωιξδ ξξερτψϊ',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                createlink: {
-                    title: 'χιωεψ',
-                    text: '.δτεκ ΰϊ δθχρθ δπαηψ μχιωεψ',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                },
-                sourceedit: {
-                    title: 'ςψιλϊ χεγ ξχεψ',
-                    text: '.δφβ χεγ ξχεψ',
-                    cls: Ext.baseCSSPrefix + 'html-editor-tip'
-                }
-            }
-        });
-    });
-
-    Ext.define("Ext.locale.he.grid.header.Container", {
-        override: "Ext.grid.header.Container",
-        sortAscText: "ξιιο αργψ ςεμδ",
-        sortDescText: "ξιιο αργψ ιεψγ",
-        lockText: "πςμ ςξεγδ",
-        unlockText: "ωηψψ ςξεγδ",
-        columnsText: "ςξεγεϊ"
-    });
-
-    Ext.define("Ext.locale.he.grid.GroupingFeature", {
-        override: "Ext.grid.GroupingFeature",
-        emptyGroupText: '(ψιχ)',
-        groupByText: 'δφβ αχαεφεϊ μτι ωγδ ζδ',
-        showGroupsText: 'δφβ αχαεφεϊ'
-    });
-
-    Ext.define("Ext.locale.he.grid.PropertyColumnModel", {
-        override: "Ext.grid.PropertyColumnModel",
-        nameText: "ων",
-        valueText: "ςψκ",
-        dateFormat: "m/j/Y"
-    });
-
 });
+
+Ext.define("Ext.locale.he.view.View", {
+    override: "Ext.view.View",
+    emptyText: ""
+});
+
+Ext.define("Ext.locale.he.grid.plugin.DragDrop", {
+    override: "Ext.grid.plugin.DragDrop",
+    dragText: "Χ©Χ•Χ¨Χ•Χª Χ Χ‘Χ—Χ¨Χ•Χª {0}"
+});
+
+Ext.define("Ext.locale.he.tab.Tab", {
+    override: "Ext.tab.Tab",
+    closeText: "Χ΅Χ’Χ•Χ¨ ΧΧ©Χ•Χ Χ™Χª"
+});
+
+Ext.define("Ext.locale.he.form.field.Base", {
+    override: "Ext.form.field.Base",
+    invalidText: "Χ”ΧΆΧ¨Χ Χ‘Χ©Χ“Χ” Χ–Χ” Χ©Χ’Χ•Χ™"
+});
+
+// changing the msg text below will affect the LoadMask
+Ext.define("Ext.locale.he.view.AbstractView", {
+    override: "Ext.view.AbstractView",
+    loadingText: "...ΧΧ•ΧΆΧ"
+});
+
+Ext.define("Ext.locale.he.picker.Date", {
+    override: "Ext.picker.Date",
+    todayText: "Χ”Χ™Χ•Χ",
+    minText: ".ΧªΧΧ¨Χ™Χ Χ–Χ” Χ—Χ Χ§Χ•Χ“Χ ΧΧªΧΧ¨Χ™Χ Χ”Χ”ΧªΧ—ΧΧªΧ™ Χ©Χ Χ§Χ‘ΧΆ",
+    maxText: ".ΧªΧΧ¨Χ™Χ Χ–Χ” Χ—Χ ΧΧΧ—Χ¨ Χ”ΧªΧΧ¨Χ™Χ Χ”Χ΅Χ•Χ¤Χ™ Χ©Χ Χ§Χ‘ΧΆ",
+    disabledDaysText: "",
+    disabledDatesText: "",
+    nextText: '(Control+Right) Χ”Χ—Χ•Χ“Χ© Χ”Χ‘Χ',
+    prevText: '(Control+Left) Χ”Χ—Χ•Χ“Χ© Χ”Χ§Χ•Χ“Χ',
+    monthYearText: '(ΧΧ‘Χ—Χ™Χ¨Χª Χ©Χ Χ” Control+Up/Down) Χ‘Χ—Χ¨ Χ—Χ•Χ“Χ©',
+    todayTip: "ΧΧ§Χ© Χ¨Χ•Χ•Χ—) {0})",
+    format: "d/m/Y",
+    startDay: 0
+});
+
+Ext.define("Ext.locale.he.picker.Month", {
+    override: "Ext.picker.Month",
+    okText: "&#160;ΧΧ™Χ©Χ•Χ¨&#160;",
+    cancelText: "Χ‘Χ™ΧΧ•Χ"
+});
+
+Ext.define("Ext.locale.he.toolbar.Paging", {
+    override: "Ext.PagingToolbar",
+    beforePageText: "ΧΆΧΧ•Χ“",
+    afterPageText: "{0} ΧΧªΧ•Χ",
+    firstText: "ΧΆΧΧ•Χ“ Χ¨ΧΧ©Χ•Χ",
+    prevText: "ΧΆΧΧ•Χ“ Χ§Χ•Χ“Χ",
+    nextText: "ΧΆΧΧ•Χ“ Χ”Χ‘Χ",
+    lastText: "ΧΆΧΧ•Χ“ ΧΧ—Χ¨Χ•Χ",
+    refreshText: "Χ¨ΧΆΧ Χ",
+    displayMsg: "ΧΧ¦Χ™Χ’ {0} - {1} ΧΧªΧ•Χ {2}",
+    emptyMsg: 'ΧΧ™Χ ΧΧ™Χ“ΧΆ ΧΧ”Χ¦Χ’Χ”'
+});
+
+Ext.define("Ext.locale.he.form.field.Text", {
+    override: "Ext.form.field.Text",
+    minLengthText: "{0} Χ”ΧΧ•Χ¨Χ Χ”ΧΧ™Χ Χ™ΧΧΧΧ™ ΧΧ©Χ“Χ” Χ–Χ” Χ”Χ•Χ",
+    maxLengthText: "{0} Χ”ΧΧ•Χ¨Χ Χ”ΧΧ™Χ¨Χ‘Χ™ ΧΧ©Χ“Χ” Χ–Χ” Χ”Χ•Χ",
+    blankText: "Χ©Χ“Χ” Χ–Χ” Χ”Χ›Χ¨Χ—Χ™",
+    regexText: "",
+    emptyText: null
+});
+
+Ext.define("Ext.locale.he.form.field.Number", {
+    override: "Ext.form.field.Number",
+    minText: "{0} Χ”ΧΆΧ¨Χ Χ”ΧΧ™Χ Χ™ΧΧΧΧ™ ΧΧ©Χ“Χ” Χ–Χ” Χ”Χ•Χ",
+    maxText: "{0} Χ”ΧΆΧ¨Χ Χ”ΧΧ™Χ¨Χ‘Χ™ ΧΧ©Χ“Χ” Χ–Χ” Χ”Χ•Χ",
+    nanText: "Χ”Χ•Χ ΧΧ ΧΧ΅Χ¤Χ¨ {0}"
+});
+
+Ext.define("Ext.locale.he.form.field.Date", {
+    override: "Ext.form.field.Date",
+    disabledDaysText: "ΧΧ Χ•ΧΧ¨Χ",
+    disabledDatesText: "ΧΧ Χ•ΧΧ¨Χ",
+    minText: "{0} Χ”ΧªΧΧ¨Χ™Χ Χ‘Χ©Χ“Χ” Χ–Χ” Χ—Χ™Χ™Χ‘ ΧΧ”Χ™Χ•Χª ΧΧΧ—Χ¨",
+    maxText: "{0} Χ”ΧªΧΧ¨Χ™Χ Χ‘Χ©Χ“Χ” Χ–Χ” Χ—Χ™Χ™Χ‘ ΧΧ”Χ™Χ•Χª ΧΧ¤Χ Χ™",
+    invalidText: "{1} Χ”Χ•Χ ΧΧ ΧªΧΧ¨Χ™Χ ΧªΧ§Χ Χ™ - Χ—Χ™Χ™Χ‘ ΧΧ”Χ™Χ•Χª Χ‘Χ¤Χ•Χ¨ΧΧ {0}",
+    format: "m/d/y",
+    altFormats: "m/d/Y|m-d-y|m-d-Y|m/d|m-d|md|mdy|mdY|d|Y-m-d"
+});
+
+Ext.define("Ext.locale.he.form.field.ComboBox", {
+    override: "Ext.form.field.ComboBox",
+    valueNotFoundText: undefined
+}, function() {
+    Ext.apply(Ext.form.field.ComboBox.prototype.defaultListConfig, {
+        loadingText: "...ΧΧ•ΧΆΧ"
+    });
+});
+
+Ext.define("Ext.locale.he.form.field.VTypes", {
+    override: "Ext.form.field.VTypes",
+    emailText: '"user@example.com" Χ©Χ“Χ” Χ–Χ” Χ¦Χ¨Χ™Χ ΧΧ”Χ™Χ•Χª Χ›ΧªΧ•Χ‘Χª Χ“Χ•ΧΧ¨ ΧΧΧ§ΧΧ¨Χ•Χ Χ™ Χ‘Χ¤Χ•Χ¨ΧΧ',
+    urlText: '"http:/' + '/www.example.com" Χ©Χ“Χ” Χ–Χ” Χ¦Χ¨Χ™Χ ΧΧ”Χ™Χ•Χª Χ›ΧªΧ•Χ‘Χª ΧΧ™Χ ΧΧ¨Χ Χ Χ‘Χ¤Χ•Χ¨ΧΧ',
+    alphaText: '_Χ©Χ“Χ” Χ–Χ” Χ™Χ›Χ•Χ ΧΧ”Χ›Χ™Χ Χ¨Χ§ ΧΧ•ΧªΧ™Χ•Χª Χ•',
+    alphanumText: '_Χ©Χ“Χ” Χ–Χ” Χ™Χ›Χ•Χ ΧΧ”Χ›Χ™Χ Χ¨Χ§ ΧΧ•ΧªΧ™Χ•Χª, ΧΧ΅Χ¤Χ¨Χ™Χ Χ•'
+});
+
+Ext.define("Ext.locale.he.form.field.HtmlEditor", {
+    override: "Ext.form.field.HtmlEditor",
+    createLinkText: ':ΧΧ Χ Χ”Χ§ΧΧ“ ΧΧª Χ›ΧªΧ•Χ‘Χª Χ”ΧΧ™Χ ΧΧ¨Χ Χ ΧΆΧ‘Χ•Χ¨ Χ”Χ§Χ™Χ©Χ•Χ¨'
+}, function() {
+    Ext.apply(Ext.form.field.HtmlEditor.prototype, {
+        buttonTips: {
+            bold: {
+                title: '(Ctrl+B) ΧΧ•Χ“Χ’Χ©',
+                text: '.Χ”Χ“Χ’Χ© ΧΧª Χ”ΧΧ§Χ΅Χ Χ”Χ Χ‘Χ—Χ¨',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            italic: {
+                title: '(Ctrl+I) Χ ΧΧ•Χ™',
+                text: '.Χ”ΧΧ” ΧΧª Χ”ΧΧ§Χ΅Χ Χ”Χ Χ‘Χ—Χ¨',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            underline: {
+                title: '(Ctrl+U) Χ§Χ• ΧªΧ—ΧªΧ™',
+                text: '.Χ”Χ•Χ΅Χ£ Χ§Χ ΧªΧ—ΧªΧ™ ΧΆΧ‘Χ•Χ¨ Χ”ΧΧ§Χ΅Χ Χ”Χ Χ‘Χ—Χ¨',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            increasefontsize: {
+                title: 'Χ”Χ’Χ“Χ ΧΧ§Χ΅Χ',
+                text: '.Χ”Χ’Χ“Χ Χ’Χ•Χ¤Χ ΧΆΧ‘Χ•Χ¨ Χ”ΧΧ§Χ΅Χ Χ”Χ Χ‘Χ—Χ¨',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            decreasefontsize: {
+                title: 'Χ”Χ§ΧΧ ΧΧ§Χ΅Χ',
+                text: '.Χ”Χ§ΧΧ Χ’Χ•Χ¤Χ ΧΆΧ‘Χ•Χ¨ Χ”ΧΧ§Χ΅Χ Χ”Χ Χ‘Χ—Χ¨',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            backcolor: {
+                title: 'Χ¦Χ‘ΧΆ Χ¨Χ§ΧΆ ΧΧΧ§Χ΅Χ',
+                text: '.Χ©Χ Χ” ΧΧª Χ¦Χ‘ΧΆ Χ”Χ¨Χ§ΧΆ ΧΆΧ‘Χ•Χ¨ Χ”ΧΧ§Χ΅Χ Χ”Χ Χ‘Χ—Χ¨',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            forecolor: {
+                title: 'Χ¦Χ‘ΧΆ Χ’Χ•Χ¤Χ',
+                text: '.Χ©Χ Χ” ΧΧª Χ¦Χ‘ΧΆ Χ”Χ’Χ•Χ¤Χ ΧΆΧ‘Χ•Χ¨ Χ”ΧΧ§Χ΅Χ Χ”Χ Χ‘Χ—Χ¨',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            justifyleft: {
+                title: 'Χ™Χ©Χ•Χ¨ ΧΧ©ΧΧΧ',
+                text: '.Χ™Χ©Χ¨ Χ©ΧΧΧΧ” ΧΧª Χ”ΧΧ§Χ΅Χ Χ”Χ Χ‘Χ—Χ¨',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            justifycenter: {
+                title: 'Χ™Χ©Χ•Χ¨ ΧΧΧ¨Χ›Χ–',
+                text: '.Χ™Χ©Χ¨ ΧΧΧ¨Χ›Χ– ΧΧª Χ”ΧΧ§Χ΅Χ Χ”Χ Χ‘Χ—Χ¨',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            justifyright: {
+                title: 'Χ™Χ©Χ•Χ¨ ΧΧ™ΧΧ™Χ',
+                text: '.Χ™Χ©Χ¨ Χ™ΧΧ™Χ Χ” ΧΧª Χ”ΧΧ§Χ΅Χ Χ”Χ Χ‘Χ—Χ¨',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            insertunorderedlist: {
+                title: 'Χ¨Χ©Χ™ΧΧª Χ Χ§Χ•Χ“Χ•Χª',
+                text: '.Χ”ΧªΧ—Χ Χ¨Χ©Χ™ΧΧª Χ Χ§Χ•Χ“Χ•Χª',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            insertorderedlist: {
+                title: 'Χ¨Χ©Χ™ΧΧ” ΧΧΧ•Χ΅Χ¤Χ¨Χª',
+                text: '.Χ”ΧªΧ—Χ Χ¨Χ©Χ™ΧΧ” ΧΧΧ•Χ΅Χ¤Χ¨Χª',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            createlink: {
+                title: 'Χ§Χ™Χ©Χ•Χ¨',
+                text: '.Χ”Χ¤Χ•Χ ΧΧª Χ”ΧΧ§Χ΅Χ Χ”Χ Χ‘Χ—Χ¨ ΧΧ§Χ™Χ©Χ•Χ¨',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            },
+            sourceedit: {
+                title: 'ΧΆΧ¨Χ™Χ›Χª Χ§Χ•Χ“ ΧΧ§Χ•Χ¨',
+                text: '.Χ”Χ¦Χ’ Χ§Χ•Χ“ ΧΧ§Χ•Χ¨',
+                cls: Ext.baseCSSPrefix + 'html-editor-tip'
+            }
+        }
+    });
+});
+
+Ext.define("Ext.locale.he.grid.header.Container", {
+    override: "Ext.grid.header.Container",
+    sortAscText: "ΧΧ™Χ™Χ Χ‘Χ΅Χ“Χ¨ ΧΆΧ•ΧΧ”",
+    sortDescText: "ΧΧ™Χ™Χ Χ‘Χ΅Χ“Χ¨ Χ™Χ•Χ¨Χ“",
+    lockText: "Χ ΧΆΧ ΧΆΧΧ•Χ“Χ”",
+    unlockText: "Χ©Χ—Χ¨Χ¨ ΧΆΧΧ•Χ“Χ”",
+    columnsText: "ΧΆΧΧ•Χ“Χ•Χª"
+});
+
+Ext.define("Ext.locale.he.grid.GroupingFeature", {
+    override: "Ext.grid.GroupingFeature",
+    emptyGroupText: '(Χ¨Χ™Χ§)',
+    groupByText: 'Χ”Χ¦Χ’ Χ‘Χ§Χ‘Χ•Χ¦Χ•Χª ΧΧ¤Χ™ Χ©Χ“Χ” Χ–Χ”',
+    showGroupsText: 'Χ”Χ¦Χ’ Χ‘Χ§Χ‘Χ•Χ¦Χ•Χª'
+});
+
+Ext.define("Ext.locale.he.grid.PropertyColumnModel", {
+    override: "Ext.grid.PropertyColumnModel",
+    nameText: "Χ©Χ",
+    valueText: "ΧΆΧ¨Χ",
+    dateFormat: "m/j/Y"
+});
+
+Ext.define("Ext.locale.he.window.MessageBox", {
+    override: "Ext.window.MessageBox",
+    buttonText: {
+        ok: "ΧΧ™Χ©Χ•Χ¨",
+        cancel: "Χ‘Χ™ΧΧ•Χ",
+        yes: "Χ›Χ",
+        no: "ΧΧ"
+    }    
+});
+
+// This is needed until we can refactor all of the locales into individual files
+Ext.define("Ext.locale.he.Component", {	
+    override: "Ext.Component"
+});
+

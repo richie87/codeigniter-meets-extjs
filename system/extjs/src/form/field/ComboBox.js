@@ -1,3 +1,23 @@
+/*
+This file is part of Ext JS 4.2
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-05-16 14:36:50 (f9be68accb407158ba2b1be2c226a6ce1f649314)
+*/
 /**
  * @docauthor Jason Johnston <jason@sencha.com>
  *
@@ -148,7 +168,7 @@ Ext.define('Ext.form.field.ComboBox', {
      */
     fieldSubTpl: [
         '<div class="{hiddenDataCls}" role="presentation"></div>',
-        '<input id="{id}" type="{type}" {inputAttrTpl} class="{fieldCls} {typeCls}" autocomplete="off"',
+        '<input id="{id}" type="{type}" {inputAttrTpl} class="{fieldCls} {typeCls} {editableCls}" autocomplete="off"',
             '<tpl if="value"> value="{[Ext.util.Format.htmlEncode(values.value)]}"</tpl>',
             '<tpl if="name"> name="{name}"</tpl>',
             '<tpl if="placeholder"> placeholder="{placeholder}"</tpl>',
@@ -180,10 +200,11 @@ Ext.define('Ext.form.field.ComboBox', {
     },
 
     /**
-     * @cfg {Ext.data.Store/Array} store
+     * @cfg {Ext.data.Store/String/Array} store
      * The data source to which this combo is bound. Acceptable values for this property are:
      *
      *   - **any {@link Ext.data.Store Store} subclass**
+     *   - **an {@link Ext.data.Store#storeId ID of a store}**
      *   - **an Array** : Arrays will be converted to a {@link Ext.data.Store} internally, automatically generating
      *     {@link Ext.data.Field#name field names} to work with all data components.
      *
@@ -242,6 +263,10 @@ Ext.define('Ext.form.field.ComboBox', {
      *   - **`'all'`** :
      *
      *     {@link #doQuery run the query} specified by the `{@link #allQuery}` config option
+     *
+     *   - **`'last'`** :
+     *
+     *     {@link #doQuery run the query} using the `{@link #lastQuery last query value}`.
      *
      *   - **`'query'`** :
      *
@@ -339,6 +364,18 @@ Ext.define('Ext.form.field.ComboBox', {
      */
 
     /**
+     * @cfg {Boolean} [anyMatch=false]
+     * Configure as `true` to allow match the typed characters at any position in the {@link #valueField}'s value.
+     */
+    anyMatch: false,
+
+    /**
+     * @cfg {Boolean} [caseSensitive=false]
+     * Configure as `true` to make the filtering match with exact case matching
+     */
+    caseSensitive: false,
+
+    /**
      * @cfg {Boolean} autoSelect
      * `true` to automatically highlight the first result gathered by the data store in the dropdown list when it is
      * opened. A false value would cause nothing in the list to be highlighted automatically, so
@@ -379,6 +416,13 @@ Ext.define('Ext.form.field.ComboBox', {
      * (and its {@link #grow} property is `true`)
      */
     growToLongestValue: true,
+    
+    /**
+     * @cfg {Boolean} enableRegEx
+     * *When {@link #queryMode} is `'local'` only*
+     *
+     * Set to `true` to have the ComboBox use the typed value as a RegExp source to filter the store to get possible matches.
+     */
 
     /**
      * @cfg {String} valueNotFoundText
@@ -448,6 +492,13 @@ Ext.define('Ext.form.field.ComboBox', {
      *   - {@link Ext.view.BoundList#shadow shadow} - defaults to `'sides'`
      *   - {@link Ext.view.BoundList#width width} - defaults to `undefined` (automatically set to the width of the ComboBox
      *     field if {@link #matchFieldWidth} is true)
+     *     {@link Ext.view.BoundList#getInnerTpl getInnerTpl} A function which returns a template string which renders
+     *     the ComboBox's {@link #displayField} value in the dropdown. This defaults to just outputting the raw value,
+     *     but may use any {@link Ext.XTemplate XTemplate} methods to produce output.
+     *     
+     *     The running template is configured with some extra properties that provide some context:
+     *         - field {@link Ext.form.field.ComboBox ComboBox} This combobox
+     *         - store {@link Ext.data.Store Store} This combobox's data store
      */
 
     //private
@@ -488,26 +539,15 @@ Ext.define('Ext.form.field.ComboBox', {
         this.addEvents(
             /**
              * @event beforequery
-             * Fires before all queries are processed. Return false to cancel the query or set the queryEvent's cancel
+             * Fires before all queries are processed. Return false to cancel the query or set the queryPlan's cancel
              * property to true.
              *
-             * @param {Object} queryEvent An object that has these properties:
-             *
-             *   - `combo` : Ext.form.field.ComboBox
-             *
-             *     This combo box
-             *
-             *   - `query` : String
-             *
-             *     The query string
-             *
-             *   - `forceAll` : Boolean
-             *
-             *     True to force "all" query
-             *
-             *   - `cancel` : Boolean
-             *
-             *     Set to true to cancel the query
+             * @param {Object} queryPlan An object containing details about the query to be executed.
+             * @param {Ext.form.field.ComboBox} queryPlan.combo A reference to this ComboBox.
+             * @param {String} queryPlan.query The query value to be used to match against the ComboBox's {@link #valueField}.
+             * @param {Boolean} queryPlan.forceAll If `true`, causes the query to be executed even if the minChars threshold is not met.
+             * @param {Boolean} queryPlan.cancel A boolean value which, if set to `true` upon return, causes the query not to be executed.
+             * @param {Boolean} queryPlan.rawQuery If `true` indicates that the raw input field value is being used, and upon store load,
              */
             'beforequery',
 
@@ -566,7 +606,6 @@ Ext.define('Ext.form.field.ComboBox', {
             }
         }
 
-
         if (!isDefined(me.valueField)) {
             me.valueField = me.displayField;
         }
@@ -624,7 +663,7 @@ Ext.define('Ext.form.field.ComboBox', {
     assertValue: function() {
         var me = this,
             value = me.getRawValue(),
-            rec;
+            rec, currentValue;
 
         if (me.forceSelection) {
             if (me.multiSelect) {
@@ -638,7 +677,12 @@ Ext.define('Ext.form.field.ComboBox', {
                 // if it does not match a record then revert to the most recent selection.
                 rec = me.findRecordByDisplay(value);
                 if (rec) {
-                    me.select(rec);
+                    currentValue = me.value;
+                    // Prevent an issue where we have duplicate display values with
+                    // different underlying values.
+                    if (!me.findRecordByValue(currentValue)) {
+                        me.select(rec, true);
+                    }
                 } else {
                     me.setValue(me.lastSelection);
                 }
@@ -671,33 +715,44 @@ Ext.define('Ext.form.field.ComboBox', {
     // invoked when a different store is bound to this combo
     // than the original
     resetToDefault: Ext.emptyFn,
-    
+
     beforeReset: function() {
         this.callParent();
-        this.clearFilter();    
+
+        // If filtered on typed value, unfilter.
+        if (this.queryFilter && !this.queryFilter.disabled) {
+            this.queryFilter.disabled = true;
+            this.store.filter();
+        }
     },
-    
+
     onUnbindStore: function(store) {
-        var picker = this.picker;
+        var me = this,
+            picker = me.picker;
+
+        // If we'd added a local filter, remove it
+        if (me.queryFilter) {
+            me.store.removeFilter(me.queryFilter);
+        }
         if (!store && picker) {
             picker.bindStore(null);
         }
-        this.clearFilter();
     },
-    
+
     onBindStore: function(store, initial) {
         var picker = this.picker;
         if (!initial) {
             this.resetToDefault();
         }
+
         if (picker) {
             picker.bindStore(store);
         }
     },
-    
+
     getStoreListeners: function() {
         var me = this;
-        
+
         return {
             beforeload: me.onBeforeLoad,
             clear: me.onClear,
@@ -707,14 +762,14 @@ Ext.define('Ext.form.field.ComboBox', {
             remove: me.onRemove
         }; 
     },
-    
+
     onBeforeLoad: function(){
         // If we're remote loading, the load mask will show which will trigger a deslectAll.
         // This selection change will trigger the collapse in onListSelectionChange. As such
         // we'll veto it for now and restore selection listeners when we've loaded.
         ++this.ignoreSelection;    
     },
-    
+
     onDataChanged: function() {
         var me = this;
 
@@ -747,28 +802,19 @@ Ext.define('Ext.form.field.ComboBox', {
         this.collapse();    
     },
 
-    onLoad: function() {
-        var me = this,
-            value = me.value;
+    onLoad: function(store, records, success) {
+        var me = this;
 
         if (me.ignoreSelection > 0) {
             --me.ignoreSelection;
         }
-        // If performing a remote query upon the raw value...
-        if (me.rawQuery) {
-            me.rawQuery = false;
-            me.syncSelection();
-            if (me.picker && !me.picker.getSelectionModel().hasSelection()) {
-                me.doAutoSelect();
-            }
-        }
-        // If store initial load or triggerAction: 'all' trigger click.
-        else {
+
+        // If not querying using the raw field value, we can set the value now we have data
+        if (success && !store.lastOptions.rawQuery) {
             // Set the value on load
-            if (me.value || me.value === 0) {
-                me.setValue(me.value);
-            } else {
-                // There's no value.
+
+            // There's no value.
+            if (me.value == null) {
                 // Highlight the first item in the list if autoSelect: true
                 if (me.store.getCount()) {
                     me.doAutoSelect();
@@ -776,6 +822,8 @@ Ext.define('Ext.form.field.ComboBox', {
                     // assign whatever empty value we have to prevent change from firing
                     me.setValue(me.value);
                 }
+            } else {
+                me.setValue(me.value);
             }
         }
     },
@@ -792,7 +840,7 @@ Ext.define('Ext.form.field.ComboBox', {
      * Executes a query to filter the dropdown list. Fires the {@link #beforequery} event prior to performing the query
      * allowing the query action to be canceled if needed.
      *
-     * @param {String} queryString The SQL query to execute
+     * @param {String} queryString The string to use to filter available items by matching against the configured {@link #valueField}.
      * @param {Boolean} [forceAll=false] `true` to force the query to execute even if there are currently fewer characters in
      * the field than the minimum specified by the `{@link #minChars}` config option. It also clears any filter
      * previously saved in the current store.
@@ -802,72 +850,166 @@ Ext.define('Ext.form.field.ComboBox', {
      * handler.
      */
     doQuery: function(queryString, forceAll, rawQuery) {
-        queryString = queryString || '';
-
-        // store in object and pass by reference in 'beforequery'
-        // so that client code can modify values.
         var me = this,
-            qe = {
-                query: queryString,
+
+            // Decide if, and how we are going to query the store
+            queryPlan = me.beforeQuery({
+                query: queryString || '',
+                rawQuery: rawQuery,
                 forceAll: forceAll,
                 combo: me,
                 cancel: false
-            },
-            store = me.store,
-            isLocalMode = me.queryMode === 'local',
-            needsRefresh;
+            });
 
-        if (me.fireEvent('beforequery', qe) === false || qe.cancel) {
+        // Allow veto.
+        if (queryPlan === false || queryPlan.cancel) {
             return false;
         }
 
-        // get back out possibly modified values
-        queryString = qe.query;
-        forceAll = qe.forceAll;
-
-        // query permitted to run
-        if (forceAll || (queryString.length >= me.minChars)) {
-            // expand before starting query so LoadMask can position itself correctly
+        // If they're using the same value as last time, just show the dropdown
+        if (me.queryCaching && queryPlan.query === me.lastQuery) {
             me.expand();
+        }
+        
+        // Otherwise filter or load the store
+        else {
+            me.lastQuery = queryPlan.query;
 
-            // make sure they aren't querying the same thing
-            if (!me.queryCaching || me.lastQuery !== queryString) {
-                me.lastQuery = queryString;
+            if (me.queryMode === 'local') {
+                me.doLocalQuery(queryPlan);
 
-                if (isLocalMode) {
-                    // forceAll means no filtering - show whole dataset.
-                    store.suspendEvents();
-                    needsRefresh = me.clearFilter();
-                    if (queryString || !forceAll) {
-                        me.activeFilter = new Ext.util.Filter({
-                            root: 'data',
-                            property: me.displayField,
-                            value: queryString
-                        });
-                        store.filter(me.activeFilter);
-                        needsRefresh = true;
-                    } else {
-                        delete me.activeFilter;
-                    }
-                    store.resumeEvents();
-                    if (me.rendered && needsRefresh) {
-                        me.getPicker().refresh();
-                    }
-                } else {
-                    // Set flag for onLoad handling to know how the Store was loaded
-                    me.rawQuery = rawQuery;
+            } else {
+                me.doRemoteQuery(queryPlan);
+            }
+        }
 
-                    // In queryMode: 'remote', we assume Store filters are added by the developer as remote filters,
-                    // and these are automatically passed as params with every load call, so we do *not* call clearFilter.
-                    if (me.pageSize) {
-                        // if we're paging, we've changed the query so start at page 1.
-                        me.loadPage(1);
-                    } else {
-                        store.load({
-                            params: me.getParams(queryString)
-                        });
-                    }
-                }
+        return true;
+    },
+
+    /**
+     * @template
+     * A method which may modify aspects of how the store is to be filtered (if {@link #queryMode} is `"local"`)
+     * of loaded (if {@link #queryMode} is `"remote"`).
+     *
+     * This is called by the {@link #doQuery method, and may be overridden in subclasses to modify
+     * the default behaviour.
+     *
+     * This method is passed an object containing information about the upcoming query operation which it may modify
+     * before returning.
+     *
+     * @param {Object} queryPlan An object containing details about the query to be executed.
+     * @param {String} queryPlan.query The query value to be used to match against the ComboBox's {@link #valueField}.
+     * @param {Boolean} queryPlan.forceAll If `true`, causes the query to be executed even if the minChars threshold is not met.
+     * @param {Boolean} queryPlan.cancel A boolean value which, if set to `true` upon return, causes the query not to be executed.
+     * @param {Boolean} queryPlan.rawQuery If `true` indicates that the raw input field value is being used, and upon store load,
+     * the input field value should **not** be overwritten.
+     *
+     */
+    beforeQuery: function(queryPlan) {
+        var me = this;
+
+        // Allow beforequery event to veto by returning false
+        if (me.fireEvent('beforequery', queryPlan) === false) {
+            queryPlan.cancel = true;
+        }
+
+        // Allow beforequery event to veto by returning setting the cancel flag
+        else if (!queryPlan.cancel) {
+
+            // If the minChars threshold has not been met, and we're not forcing an "all" query, cancel the query
+            if (queryPlan.query.length < me.minChars && !queryPlan.forceAll) {
+                queryPlan.cancel = true;
+            }
+        }
+        return queryPlan;
+    },
+
+    doLocalQuery: function(queryPlan) {
+        var me = this,
+            queryString = queryPlan.query;
+
+        // Create our filter when first needed
+        if (!me.queryFilter) {
+            // Create the filter that we will use during typing to filter the Store
+            me.queryFilter = new Ext.util.Filter({
+                id: me.id + '-query-filter',
+                anyMatch: me.anyMatch,
+                caseSensitive: me.caseSensitive,
+                root: 'data',
+                property: me.displayField
+            });
+            me.store.addFilter(me.queryFilter, false);
+        }
+
+        // Querying by a string...
+        if (queryString || !queryPlan.forceAll) {
+            me.queryFilter.disabled = false;
+            me.queryFilter.setValue(me.enableRegEx ? new RegExp(queryString) : queryString);
+        }
+
+        // If forceAll being used, or no query string, disable the filter
+        else {
+            me.queryFilter.disabled = true;
+        }
+
+        // Filter the Store according to the updated filter
+        me.store.filter();
+
+        // Expand after adjusting the filter unless there are no matches
+        if (me.store.getCount()) {
+            me.expand();
+        } else {
+            me.collapse();
+        }
+
+        me.afterQuery(queryPlan);
+    },
+
+    doRemoteQuery: function(queryPlan) {
+        var me = this,
+            loadCallback = function() {
+                me.afterQuery(queryPlan);
+            };
+
+        // expand before loading so LoadMask can position itself correctly
+        me.expand();
+
+        // In queryMode: 'remote', we assume Store filters are added by the developer as remote filters,
+        // and these are automatically passed as params with every load call, so we do *not* call clearFilter.
+        if (me.pageSize) {
+            // if we're paging, we've changed the query so start at page 1.
+            me.loadPage(1, {
+                rawQuery: queryPlan.rawQuery,
+                callback: loadCallback
+            });
+        } else {
+            me.store.load({
+                params: me.getParams(queryPlan.query),
+                rawQuery: queryPlan.rawQuery,
+                callback: loadCallback
+            });
+        }
+    },
+
+    /**
+     * @template
+     * A method called when the filtering caused by the {@link #doQuery} call is complete and the store has been
+     * either filtered locally (if {@link #queryMode} is `"local"`), or has been loaded using the specified filtering.
+     *
+     * @param {Object} queryPlan An object containing details about the query was executed.
+     * @param {String} queryPlan.query The query value to be used to match against the ComboBox's {@link #valueField}.
+     * @param {Boolean} queryPlan.forceAll If `true`, causes the query to be executed even if the minChars threshold is not met.
+     * @param {Boolean} queryPlan.cancel A boolean value which, if set to `true` upon return, causes the query not to be executed.
+     * @param {Boolean} queryPlan.rawQuery If `true` indicates that the raw input field value is being used, and upon store load,
+     * the input field value should **not** be overwritten.
+     * 
+     */
+    afterQuery: function(queryPlan) {
+        var me = this;
+
+        if (me.store.getCount()) {
+            if (me.typeAhead) {
+                me.doTypeAhead();
             }
 
             // Clear current selection if it does not match the current value in the field
@@ -877,45 +1019,21 @@ Ext.define('Ext.form.field.ComboBox', {
                 me.ignoreSelection--;
             }
 
-            if (isLocalMode) {
+            if (queryPlan.rawQuery) {
+                me.syncSelection();
+                if (me.picker && !me.picker.getSelectionModel().hasSelection()) {
+                    me.doAutoSelect();
+                }
+            } else {
                 me.doAutoSelect();
             }
-            if (me.typeAhead) {
-                me.doTypeAhead();
-            }
         }
-        return true;
-    },
-    
-    /**
-     * Clears any previous filters applied by the combo to the store
-     * @private
-     * @return {Boolean} True if a filter was removed
-     */
-    clearFilter: function() {
-        var store = this.store,
-            filter = this.activeFilter,
-            filters = store.filters,
-            remaining;
-            
-        if (filter) {
-            if (filters.getCount() > 1) {
-                // More than 1 existing filter
-                filters.remove(filter);
-                remaining = filters.getRange();
-            }
-            store.clearFilter(true);
-            if (remaining) {
-                store.filter(remaining);
-            }
-        }
-        return !!filter;
     },
 
-    loadPage: function(pageNum){
-        this.store.loadPage(pageNum, {
+    loadPage: function(pageNum, options) {
+        this.store.loadPage(pageNum, Ext.apply({
             params: this.getParams(this.lastQuery)
-        });
+        }, options));
     },
 
     onPageChange: function(toolbar, newPage){
@@ -976,6 +1094,8 @@ Ext.define('Ext.form.field.ComboBox', {
                 me.onFocus({});
                 if (me.triggerAction === 'all') {
                     me.doQuery(me.allQuery, true);
+                } else if (me.triggerAction === 'last') {
+                    me.doQuery(me.lastQuery, true);
                 } else {
                     me.doQuery(me.getRawValue(), false, true);
                 }
@@ -984,6 +1104,13 @@ Ext.define('Ext.form.field.ComboBox', {
         }
     },
 
+    onPaste: function(){
+        var me = this;
+        
+        if (!me.readOnly && !me.disabled && me.editable) {
+            me.doQueryTask.delay(me.queryDelay);
+        }
+    },
 
     // store the last key and doQuery if relevant
     onKeyUp: function(e, t) {
@@ -1017,9 +1144,11 @@ Ext.define('Ext.form.field.ComboBox', {
         if (!me.enableKeyEvents) {
             me.mon(me.inputEl, 'keyup', me.onKeyUp, me);
         }
+        me.mon(me.inputEl, 'paste', me.onPaste, me);
     },
 
     onDestroy: function() {
+        Ext.destroy(this.listKeyNav);
         this.bindStore(null);
         this.callParent();
     },
@@ -1094,7 +1223,10 @@ Ext.define('Ext.form.field.ComboBox', {
     },
 
     onListRefresh: function() {
-        this.alignPicker();
+        // Picker will be aligned during the expand call
+        if (!this.expanding) {
+            this.alignPicker();
+        }
         this.syncSelection();
     },
 
@@ -1174,6 +1306,18 @@ Ext.define('Ext.form.field.ComboBox', {
                     }
                     // Tab key event is allowed to propagate to field
                     return true;
+                },
+                enter: function(e){
+                    var selModel = picker.getSelectionModel(),
+                        count = selModel.getCount();
+                        
+                    this.selectHighlighted(e);
+                    
+                    // Handle the case where the highlighted item is already selected
+                    // In this case, the change event won't fire, so just collapse
+                    if (!me.multiSelect && count === selModel.getCount()) {
+                        me.collapse();
+                    }
                 }
             });
         }
@@ -1204,8 +1348,22 @@ Ext.define('Ext.form.field.ComboBox', {
      * Selects an item by a {@link Ext.data.Model Model}, or by a key value.
      * @param {Object} r
      */
-    select: function(r) {
-        this.setValue(r, true);
+    select: function(r, /* private */ assert) {
+        var me = this,
+            picker = me.picker,
+            doSelect = true,
+            fireSelect;
+        
+        if (r && r.isModel && assert === true && picker) {
+            fireSelect = !picker.getSelectionModel().isSelected(r);
+        }
+        
+        me.setValue(r, true);
+        // Select needs to be fired after setValue, so that when we call getValue
+        // in select it returns the correct value
+        if (fireSelect) {
+            me.fireEvent('select', me, r);
+        }
     },
 
     /**
@@ -1396,7 +1554,13 @@ Ext.define('Ext.form.field.ComboBox', {
     },
 
     getSubmitValue: function() {
-        return this.getValue();
+        var value = this.getValue();
+        // If the value is null/undefined, we still return an empty string. If we
+        // don't, the field will never get posted to the server since nulls are ignored.
+        if (Ext.isEmpty(value)) {
+            value = '';
+        }
+        return value;
     },
 
     isEqual: function(v1, v2) {
@@ -1453,7 +1617,7 @@ Ext.define('Ext.form.field.ComboBox', {
             selModel = picker.getSelectionModel();
             selModel.deselectAll();
             if (selection.length) {
-                selModel.select(selection);
+                selModel.select(selection, undefined, true);
             }
             me.ignoreSelection--;
         }

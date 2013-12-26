@@ -1,3 +1,23 @@
+/*
+This file is part of Ext JS 4.2
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-05-16 14:36:50 (f9be68accb407158ba2b1be2c226a6ce1f649314)
+*/
 /**
  * Provides Ext.direct support for submitting form data.
  *
@@ -96,10 +116,35 @@ Ext.define('Ext.form.action.DirectSubmit', {
 
     doSubmit: function() {
         var me = this,
+            form = me.form,
+            api = form.api,
+            fn = api.submit,
             callback = Ext.Function.bind(me.onComplete, me),
-            formEl = me.buildForm();
-        me.form.api.submit(formEl, callback, me);
-        Ext.removeNode(formEl);
+            formInfo = me.buildForm(),
+            options;
+        
+        if (typeof fn !== 'function') {
+            //<debug>
+            var fnName = fn;
+            //</debug>
+            
+            api.submit = fn = Ext.direct.Manager.parseMethod(fn);
+            
+            //<debug>
+            if (!Ext.isFunction(fn)) {
+                Ext.Error.raise('Cannot resolve Ext.Direct API method ' + fnName);
+            }
+            //</debug>
+        }
+        
+        if (me.timeout || form.timeout) {
+            options = {
+                timeout: me.timeout * 1000 || form.timeout * 1000
+            };
+        }
+        
+        fn.call(window, formInfo.formEl, callback, me, options);
+        me.cleanup(formInfo);
     },
 
     // Direct actions have already been processed and therefore

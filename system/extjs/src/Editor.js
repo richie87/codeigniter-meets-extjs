@@ -1,3 +1,23 @@
+/*
+This file is part of Ext JS 4.2
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-05-16 14:36:50 (f9be68accb407158ba2b1be2c226a6ce1f649314)
+*/
 /**
  * The Editor class is used to provide inline editing for elements on the page. The editor
  * is backed by a {@link Ext.form.field.Field} that will be displayed to edit the underlying content.
@@ -103,13 +123,13 @@ Ext.define('Ext.Editor', {
 
     /**
      * @cfg {String} alignment
-     * The position to align to (see {@link Ext.Element#alignTo} for more details).
+     * The position to align to (see {@link Ext.util.Positionable#alignTo} for more details).
      */
     alignment: 'c-c?',
 
     /**
      * @cfg {Number[]} offsets
-     * The offsets to use when aligning (see {@link Ext.Element#alignTo} for more details.
+     * The offsets to use when aligning (see {@link Ext.util.Positionable#alignTo} for more details.
      */
     offsets: [0, 0],
 
@@ -149,6 +169,11 @@ Ext.define('Ext.Editor', {
      */
     updateEl : false,
 
+    // Do not participate in the ZIndexManager's focus switching operations.
+    // When an editor is hidden, the ZIndexManager will not automatically activate
+    // the last visible floater on the stack.
+    focusOnToFront: false,
+
     /**
      * @cfg {String/HTMLElement/Ext.Element} [parentEl=document.body]
      * An element to render to.
@@ -168,11 +193,7 @@ Ext.define('Ext.Editor', {
         });
         me.mon(field, {
             scope: me,
-            blur: {
-                fn: me.onFieldBlur,
-                // slight delay to avoid race condition with startEdits (e.g. grid view refresh)
-                delay: 1
-            },
+            blur: me.onFieldBlur,
             specialkey: me.onSpecialKey
         });
 
@@ -311,6 +332,14 @@ Ext.define('Ext.Editor', {
         value = Ext.isDefined(value) ? value : Ext.String.trim(me.boundEl.dom.innerText || me.boundEl.dom.innerHTML);
 
         if (!me.rendered) {
+            // Render to the ownerCt's element
+            // Being floating, we do not need to use the actual layout's target.
+            // Indeed, it's better if we do not so that we do not interfere with layout's child management,
+            // especially with CellEditors in the element of a TablePanel.
+            if (me.ownerCt) {
+                me.parentEl = me.ownerCt.el;
+                me.parentEl.position();
+            }
             me.render(me.parentEl || document.body);
         }
 
@@ -323,7 +352,7 @@ Ext.define('Ext.Editor', {
             field.setValue(value);
             field.resumeEvents();
             me.realign(true);
-            field.focus(false, 10);
+            field.focus();
             if (field.autoSize) {
                 field.autoSize();
             }
@@ -429,15 +458,15 @@ Ext.define('Ext.Editor', {
     // private
     onFieldBlur : function(field, e) {
         var me = this,
-            target;
+            target = Ext.Element.getActiveElement();
 
         // selectSameEditor flag allows the same editor to be started without onFieldBlur firing on itself
         if(me.allowBlur === true && me.editing && me.selectSameEditor !== true) {
             me.completeEdit();
         }
 
-        // If the target of the event was focusable, prevent reacquisition of focus by editor owner
-        if (e && Ext.fly(target = e.getTarget()).focusable()) {
+        // If newly active element is focusable, prevent reacquisition of focus by editor owner
+        if (Ext.fly(target).isFocusable() || target.getAttribute('tabIndex')) {
             target.focus();
         }
     },
@@ -451,8 +480,10 @@ Ext.define('Ext.Editor', {
             me.completeEdit();
             return;
         }
-        if (field.hasFocus) {
-            field.blur();
+        // Fields which mimic blur have to be told to fire t heir blur events.
+        // All other types of field are automatically blurred when an ancestor hides.
+        if (field.hasFocus && field.triggerBlur) {
+            field.triggerBlur();
         }
         if (field.collapse) {
             field.collapse();

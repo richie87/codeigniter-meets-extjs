@@ -1,3 +1,23 @@
+/*
+This file is part of Ext JS 4.2
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-05-16 14:36:50 (f9be68accb407158ba2b1be2c226a6ce1f649314)
+*/
 /**
  * @class Ext.chart.series.Area
  * @extends Ext.chart.series.Cartesian
@@ -26,7 +46,6 @@
  *         axes: [
  *             {
  *                 type: 'Numeric',
- *                 grid: true,
  *                 position: 'left',
  *                 fields: ['data1', 'data2', 'data3', 'data4', 'data5'],
  *                 title: 'Sample Values',
@@ -70,8 +89,6 @@
  * take the left axis to measure the data in the area series, set as xField (x values) the name field of each element in the store,
  * and as yFields (aggregated layers) seven data fields from the same store. Then we override some theming styles by adding some opacity
  * to the style object.
- *
- * @xtype area
  */
 Ext.define('Ext.chart.series.Area', {
 
@@ -186,7 +203,7 @@ Ext.define('Ext.chart.series.Area', {
             boundAxis = me.getAxesForXAndYFields(),
             boundXAxis = boundAxis.xAxis,
             boundYAxis = boundAxis.yAxis,
-            ends, allowDate,
+            ends, allowDate, tmp,
             bbox, xScale, yScale, xValue, yValue, areaIndex, acumY, ln, sumValues, clipBox, areaElem, axis, out;
 
         me.setBBox();
@@ -228,7 +245,17 @@ Ext.define('Ext.chart.series.Area', {
             maxY = 0;
         }
 
-        for (i = 0, l = data.length; i < l; i++) {
+        l = data.length;
+        if (l > 0 && allowDate) {
+            tmp = data[0].get(me.xField);
+            if (typeof tmp != 'number') {
+                tmp = +tmp;
+                if (isNaN(tmp)) {
+                    allowDate = false;
+                }
+            } 
+        }
+        for (i = 0; i < l; i++) {
             record = data[i];
             xValue = record.get(me.xField);
             yValue = [];
@@ -289,7 +316,7 @@ Ext.define('Ext.chart.series.Area', {
             componentPath,
             count = 0,
             paths = [],
-            i, ln, x, y, xValue, yValue, acumY, areaIndex, prevAreaIndex, areaElem, path;
+            i, ln, x, y, xValue, yValue, acumY, areaIndex, prevAreaIndex, areaElem, path, startX;
 
         ln = bounds.xValues.length;
         // Start the path
@@ -297,6 +324,9 @@ Ext.define('Ext.chart.series.Area', {
             xValue = bounds.xValues[i];
             yValue = bounds.yValues[i];
             x = bbox.x + (xValue - bounds.minX) * bounds.xScale;
+            if (startX === undefined) {
+                startX = x;
+            }
             acumY = 0;
             count = 0;
             for (areaIndex = 0; areaIndex < bounds.areasLen; areaIndex++) {
@@ -336,11 +366,13 @@ Ext.define('Ext.chart.series.Area', {
                 continue;
             }
             path = paths[areaIndex];
+
             // Close bottom path to the axis
             if (areaIndex == 0 || first) {
                 first = false;
+
                 path.push('L', x, bbox.y + bbox.height,
-                          'L', bbox.x, bbox.y + bbox.height,
+                          'L', startX, bbox.y + bbox.height,
                           'Z');
             }
             // Close other paths to the one before them
@@ -354,7 +386,7 @@ Ext.define('Ext.chart.series.Area', {
                               componentPath[i][2]);
                     items[areaIndex].pointsDown[ln -i -1] = [componentPath[i][1], componentPath[i][2]];
                 }
-                path.push('L', bbox.x, path[2], 'Z');
+                path.push('L', startX, path[2], 'Z');
             }
             prevAreaIndex = areaIndex;
         }
@@ -377,7 +409,8 @@ Ext.define('Ext.chart.series.Area', {
             endLineStyle = Ext.apply(me.seriesStyle, me.style),
             colorArrayStyle = me.colorArrayStyle,
             colorArrayLength = colorArrayStyle && colorArrayStyle.length || 0,
-            areaIndex, areaElem, paths, path, rendererAttributes;
+            themeIndex = me.themeIdx,
+            areaIndex, areaElem, paths, path, rendererAttributes, idx;
         
         me.unHighlightItem();
         me.cleanHighlights();
@@ -399,14 +432,15 @@ Ext.define('Ext.chart.series.Area', {
             if (me.__excludes[areaIndex]) {
                 continue;
             }
+            idx = themeIndex + areaIndex;
             if (!me.areas[areaIndex]) {
                 me.items[areaIndex].sprite = me.areas[areaIndex] = surface.add(Ext.apply({}, {
                     type: 'path',
                     group: group,
                     // 'clip-rect': me.clipBox,
                     path: paths.paths[areaIndex],
-                    stroke: endLineStyle.stroke || colorArrayStyle[areaIndex % colorArrayLength],
-                    fill: colorArrayStyle[areaIndex % colorArrayLength]
+                    stroke: endLineStyle.stroke || colorArrayStyle[idx % colorArrayLength],
+                    fill: colorArrayStyle[idx % colorArrayLength]
                 }, endLineStyle || {}));
             }
             areaElem = me.areas[areaIndex];
@@ -428,8 +462,8 @@ Ext.define('Ext.chart.series.Area', {
                     path: path,
                     // 'clip-rect': me.clipBox,
                     hidden: false,
-                    fill: colorArrayStyle[areaIndex % colorArrayLength],
-                    stroke: endLineStyle.stroke || colorArrayStyle[areaIndex % colorArrayLength]
+                    fill: colorArrayStyle[idx % colorArrayLength],
+                    stroke: endLineStyle.stroke || colorArrayStyle[idx % colorArrayLength]
                 }, areaIndex, store);
                 me.areas[areaIndex].setAttributes(rendererAttributes, true);
             }
@@ -446,17 +480,28 @@ Ext.define('Ext.chart.series.Area', {
 
     // @private
     onCreateLabel: function(storeItem, item, i, display) {
+        // TODO: Implement labels for Area charts. 
+        // The code in onCreateLabel() and onPlaceLabel() was originally copied
+        // from another Series but it cannot work because item.point[] doesn't
+        // exist in Area charts. Instead, the getPaths() methods above prepares
+        // item.pointsUp[] and item.pointsDown[] which don't have the same structure.
+        // In other series, there are as many 'items' as there are data points along the
+        // x-axis. In this series, there are as many 'items' as there are series
+        // (usually a much smaller number) and each pointsUp[] or pointsDown[] array 
+        // contains as many values as there are data points along the x-axis;
+        return null;
+
         var me = this,
             group = me.labelsGroup,
             config = me.label,
             bbox = me.bbox,
-            endLabelStyle = Ext.apply(config, me.seriesLabelStyle);
+            endLabelStyle = Ext.apply({}, config, me.seriesLabelStyle || {});
 
         return me.chart.surface.add(Ext.apply({
             'type': 'text',
             'text-anchor': 'middle',
             'group': group,
-            'x': item.point[0],
+            'x': Number(item.point[0]),
             'y': bbox.y + bbox.height / 2
         }, endLabelStyle || {}));
     },
@@ -470,23 +515,32 @@ Ext.define('Ext.chart.series.Area', {
             format = config.renderer,
             field = config.field,
             bbox = me.bbox,
-            x = item.point[0],
-            y = item.point[1],
-            bb, width, height;
+            x = Number(item.point[i][0]),
+            y = Number(item.point[i][1]),
+            labelBox, width, height;
 
         label.setAttributes({
-            text: format(storeItem.get(field[index])),
+            text: format(storeItem.get(field[index]), label, storeItem, item, i, display, animate, index),
             hidden: true
         }, true);
 
-        bb = label.getBBox();
-        width = bb.width / 2;
-        height = bb.height / 2;
+        labelBox = label.getBBox();
+        width = labelBox.width / 2;
+        height = labelBox.height / 2;
 
-        x = x - width < bbox.x? bbox.x + width : x;
-        x = (x + width > bbox.x + bbox.width) ? (x - (x + width - bbox.x - bbox.width)) : x;
-        y = y - height < bbox.y? bbox.y + height : y;
-        y = (y + height > bbox.y + bbox.height) ? (y - (y + height - bbox.y - bbox.height)) : y;
+        //correct label position to fit into the box
+        if (x < bbox.x + width) {
+            x = bbox.x + width;
+        } else if (x + width > bbox.x + bbox.width) {
+            x = bbox.x + bbox.width - width;
+        }
+
+        y = y - height;
+        if (y < bbox.y + height) {
+            y += 2 * height;
+        } else if (y + height > bbox.y + bbox.height) {
+            y -= 2 * height;
+        }
 
         if (me.chart.animate && !me.chart.resizing) {
             label.show(true);
@@ -501,7 +555,7 @@ Ext.define('Ext.chart.series.Area', {
                 x: x,
                 y: y
             }, true);
-            if (resizing) {
+            if (resizing && me.animation) {
                 me.animation.on('afteranimate', function() {
                     label.show(true);
                 });
@@ -523,13 +577,17 @@ Ext.define('Ext.chart.series.Area', {
             next = (i == items.length -1) ? false : items[i +1].point,
             cur = item.point,
             dir, norm, normal, a, aprev, anext,
-            bbox = callout.label.getBBox(),
+            bbox = (callout && callout.label ? callout.label.getBBox() : {width:0,height:0}),
             offsetFromViz = 30,
             offsetToSide = 10,
             offsetBox = 3,
             boxx, boxy, boxw, boxh,
             p, clipRect = me.clipRect,
             x, y;
+
+        if (!bbox.width || !bbox.height) {
+            return;
+        }
 
         //get the right two points
         if (!prev) {
@@ -633,7 +691,7 @@ Ext.define('Ext.chart.series.Area', {
                 if (y >= point[1] && (!pointsDown.length || y <= (pointsDown[p -1][1]))) {
                     item.storeIndex = p -1;
                     item.storeField = me.yField[i];
-                    item.storeItem = me.chart.store.getAt(p -1);
+                    item.storeItem = me.chart.getChartStore().getAt(p -1);
                     item._points = pointsDown.length? [point, pointsDown[p -1]] : [point];
                     return true;
                 } else {
@@ -793,6 +851,7 @@ Ext.define('Ext.chart.series.Area', {
      */
     getLegendColor: function(index) {
         var me = this;
+        index += me.themeIdx;
         return me.colorArrayStyle[index % me.colorArrayStyle.length];
     }
 });

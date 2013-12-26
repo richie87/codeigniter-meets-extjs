@@ -24,11 +24,11 @@ Ext.define('CImeetsExtJS.controller.Movies', {
         });
 		
         this.control({
-			'movie-grid dataview': {
+			'movie-grid': {
 				itemdblclick: this.addEditMovie,
-				itemcontextmenu: this.listContextMenu,
+				itemcontextmenu: this.listContextMenu
             },
-            'movie-grid button[action=add]': {
+            'movie-grid > toolbar > button[action=add]': {
             	click: this.addEditMovie
             },
 			'menu[id=movie-grid-ctx] > menuitem': {
@@ -64,7 +64,7 @@ Ext.define('CImeetsExtJS.controller.Movies', {
 		var window = Ext.create('CImeetsExtJS.view.movie.Window'),
 			form = window.down('form');
 		
-		if(record) {
+		if(record.data) {
 			form.loadRecord(record);
         }
 		

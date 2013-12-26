@@ -1,6 +1,26 @@
+/*
+This file is part of Ext JS 4.2
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-05-16 14:36:50 (f9be68accb407158ba2b1be2c226a6ce1f649314)
+*/
 /**
  * This class is used to display small visual icons in the header of a panel. There are a set of
- * 25 icons that can be specified by using the {@link #type} config. The {@link #handler} config
+ * 25 icons that can be specified by using the {@link #type} config. The {@link #callback} config
  * can be used to provide a function that will respond to any click events. In general, this class
  * will not be instantiated directly, rather it will be created by specifying the {@link Ext.panel.Panel#tools}
  * configuration on the Panel itself.
@@ -13,29 +33,49 @@
  *         title: 'A Panel',
  *         tools: [{
  *             type: 'help',
- *             handler: function(){
+ *             callback: function() {
  *                 // show help here
  *             }
  *         }, {
  *             itemId: 'refresh',
  *             type: 'refresh',
  *             hidden: true,
- *             handler: function(){
+ *             callback: function() {
  *                 // do refresh
  *             }
  *         }, {
  *             type: 'search',
- *             handler: function(event, target, owner, tool){
+ *             callback: function (panel) {
  *                 // do search
- *                 owner.child('#refresh').show();
+ *                 panel.down('#refresh').show();
  *             }
  *         }]
  *     });
+ *
+ * The `callback` config was added in Ext JS 4.2.1 as an alternative to {@link #handler}
+ * to provide a more convenient list of arguments. In Ext JS 4.2.1 it is also possible to
+ * pass a method name instead of a direct function:
+ * 
+ *      tools: [{
+ *          type: 'help',
+ *          callback: 'onHelp',
+ *          scope: this
+ *      },
+ *      ...
+ * 
+ * The `callback` (or `handler`) name is looked up on the `scope` which will also be the
+ * `this` reference when the method is called.
  */
 Ext.define('Ext.panel.Tool', {
     extend: 'Ext.Component',
     requires: ['Ext.tip.QuickTipManager'],
     alias: 'widget.tool',
+
+    /**
+     * @property {Boolean} isTool
+     * `true` in this class to identify an object as an instantiated Tool, or subclass thereof.
+     */
+    isTool: true,
 
     baseCls: Ext.baseCSSPrefix + 'tool',
     disabledCls: Ext.baseCSSPrefix + 'tool-disabled',
@@ -58,8 +98,26 @@ Ext.define('Ext.panel.Tool', {
     ],
 
     renderTpl: [
-        '<img id="{id}-toolEl" src="{blank}" class="{baseCls}-{type}" role="presentation"/>'
+        '<img role="presentation" id="{id}-toolEl" src="{blank}" class="{baseCls}-img {baseCls}-{type}' +
+            '{childElCls}" role="presentation"/>'
     ],
+
+    /**
+     * @cfg {Ext.Component} toolOwner
+     * The owner to report to the `callback` method. Default is `null` for the `ownerCt`.
+     * @since 4.2
+     */
+    toolOwner: null,
+
+    /**
+     * @cfg {Function} callback A function to execute when the tool is clicked.
+     * @cfg {Ext.Component} callback.owner The logical owner of the tool. In a typical
+     * `Ext.panel.Panel`, this is set to the owning panel. This value comes from the
+     * `toolOwner` config.
+     * @cfg {Ext.panel.Tool} callback.tool The tool that is calling.
+     * @cfg {Ext.EventObject} callback.event The click event.
+     * @since 4.2
+     */
 
     /**
      * @cfg {Function} handler
@@ -73,7 +131,8 @@ Ext.define('Ext.panel.Tool', {
 
     /**
      * @cfg {Object} scope
-     * The scope to execute the {@link #handler} function. Defaults to the tool.
+     * The scope to execute the {@link #callback} or {@link #handler} function. Defaults
+     * to the tool.
      */
 
     /**
@@ -122,7 +181,8 @@ Ext.define('Ext.panel.Tool', {
      * Specify as false to allow click event to propagate.
      */
     stopEvent: true,
-    
+
+    // Tool size is fixed so that Box layout can avoid measurements.
     height: 15,
     width: 15,
 
@@ -185,14 +245,6 @@ Ext.define('Ext.panel.Tool', {
         // alias qtip, should use tooltip since it's what we have in the docs
         me.tooltip = me.tooltip || me.qtip;
         me.callParent();
-        me.on({
-            element: 'toolEl',
-            click: me.onClick,
-            mousedown: me.onMouseDown,
-            mouseover: me.onMouseOver,
-            mouseout: me.onMouseOut,
-            scope: me
-        });
     },
 
     // inherit docs
@@ -201,15 +253,24 @@ Ext.define('Ext.panel.Tool', {
             attr;
 
         me.callParent(arguments);
+
+        me.el.on({
+            click: me.onClick,
+            mousedown: me.onMouseDown,
+            mouseover: me.onMouseOver,
+            mouseout: me.onMouseOut,
+            scope: me
+        });
+
         if (me.tooltip) {
-            if (Ext.isObject(me.tooltip)) {
+            if (Ext.quickTipsActive && Ext.isObject(me.tooltip)) {
                 Ext.tip.QuickTipManager.register(Ext.apply({
                     target: me.id
                 }, me.tooltip));
             }
             else {
                 attr = me.tooltipType == 'qtip' ? 'data-qtip' : 'title';
-                me.toolEl.dom.setAttribute(attr, me.tooltip);
+                me.el.dom.setAttribute(attr, me.tooltip);
             }
         }
     },
@@ -224,22 +285,19 @@ Ext.define('Ext.panel.Tool', {
      * @return {Ext.panel.Tool} this
      */
     setType: function(type) {
-        var me = this;
+        var me = this,
+            oldType = me.type;
 
         me.type = type;
         if (me.rendered) {
-            me.toolEl.dom.className = me.baseCls + '-' + type;
+            if (oldType) {
+                me.toolEl.removeCls(me.baseCls + '-' + oldType);
+            }
+            me.toolEl.addCls(me.baseCls + '-' + type);
+        } else {
+            me.renderData.type = type;
         }
         return me;
-    },
-
-    /**
-     * Binds this tool to a component.
-     * @private
-     * @param {Ext.Component} component The component
-     */
-    bindTo: function(component) {
-        this.owner = component;
     },
 
     /**
@@ -249,13 +307,11 @@ Ext.define('Ext.panel.Tool', {
      * @param {HTMLElement} target The target element
      */
     onClick: function(e, target) {
-        var me = this,
-            owner;
+        var me = this;
 
         if (me.disabled) {
             return false;
         }
-        owner = me.owner || me.ownerCt;
 
         //remove the pressed + over class
         me.el.removeCls(me.toolPressedCls);
@@ -265,14 +321,18 @@ Ext.define('Ext.panel.Tool', {
             e.stopEvent();
         }
 
-        Ext.callback(me.handler, me.scope || me, [e, target, owner, me]);
+        if (me.handler) {
+            Ext.callback(me.handler, me.scope || me, [e, target, me.ownerCt, me]);
+        } else if (me.callback) {
+            Ext.callback(me.callback, me.scope || me, [me.toolOwner || me.ownerCt, me, e]);
+        }
         me.fireEvent('click', me, e);
         return true;
     },
 
     // inherit docs
     onDestroy: function(){
-        if (Ext.isObject(this.tooltip)) {
+        if (Ext.quickTipsActive && Ext.isObject(this.tooltip)) {
             Ext.tip.QuickTipManager.unregister(this.id);
         }
         this.callParent();

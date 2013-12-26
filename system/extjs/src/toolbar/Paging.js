@@ -1,3 +1,23 @@
+/*
+This file is part of Ext JS 4.2
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-05-16 14:36:50 (f9be68accb407158ba2b1be2c226a6ce1f649314)
+*/
 /**
  * As the number of records increases, the time required for the browser to render them increases. Paging is used to
  * reduce the amount of data exchanged with the client. Note: if there are more records/rows than can be viewed in the
@@ -356,7 +376,7 @@ Ext.define('Ext.toolbar.Paging', {
 
         me.bindStore(me.store || 'ext-empty-store', true);
     },
-    // private
+    // @private
     updateInfo : function(){
         var me = this,
             displayItem = me.child('#displayItem'),
@@ -380,7 +400,7 @@ Ext.define('Ext.toolbar.Paging', {
         }
     },
 
-    // private
+    // @private
     onLoad : function(){
         var me = this,
             pageData,
@@ -388,7 +408,8 @@ Ext.define('Ext.toolbar.Paging', {
             pageCount,
             afterText,
             count,
-            isEmpty;
+            isEmpty,
+            item;
 
         count = me.store.getCount();
         isEmpty = count === 0;
@@ -404,13 +425,19 @@ Ext.define('Ext.toolbar.Paging', {
         }
 
         Ext.suspendLayouts();
-        me.child('#afterTextItem').setText(afterText);
-        me.child('#inputItem').setDisabled(isEmpty).setValue(currPage);
-        me.child('#first').setDisabled(currPage === 1 || isEmpty);
-        me.child('#prev').setDisabled(currPage === 1  || isEmpty);
-        me.child('#next').setDisabled(currPage === pageCount  || isEmpty);
-        me.child('#last').setDisabled(currPage === pageCount  || isEmpty);
-        me.child('#refresh').enable();
+        item = me.child('#afterTextItem');
+        if (item) {    
+            item.setText(afterText);
+        }
+        item = me.getInputItem();
+        if (item) {
+            item.setDisabled(isEmpty).setValue(currPage);
+        }
+        me.setChildDisabled('#first', currPage === 1 || isEmpty);
+        me.setChildDisabled('#prev', currPage === 1 || isEmpty);
+        me.setChildDisabled('#next', currPage === pageCount  || isEmpty);
+        me.setChildDisabled('#last', currPage === pageCount  || isEmpty);
+        me.setChildDisabled('#refresh', false);
         me.updateInfo();
         Ext.resumeLayouts(true);
 
@@ -418,8 +445,15 @@ Ext.define('Ext.toolbar.Paging', {
             me.fireEvent('change', me, pageData);
         }
     },
+    
+    setChildDisabled: function(selector, disabled){
+        var item = this.child(selector);
+        if (item) {
+            item.setDisabled(disabled);
+        }
+    },
 
-    // private
+    // @private
     getPageData : function(){
         var store = this.store,
             totalCount = store.getTotalCount();
@@ -434,37 +468,54 @@ Ext.define('Ext.toolbar.Paging', {
         };
     },
 
-    // private
+    // @private
     onLoadError : function(){
         if (!this.rendered) {
             return;
         }
-        this.child('#refresh').enable();
+        this.setChildDisabled('#refresh', false);
+    },
+    
+    getInputItem: function(){
+        return this.child('#inputItem');
     },
 
-    // private
+    // @private
     readPageFromInput : function(pageData){
-        var v = this.child('#inputItem').getValue(),
-            pageNum = parseInt(v, 10);
+        var inputItem = this.getInputItem(),
+            pageNum = false,
+            v;
 
-        if (!v || isNaN(pageNum)) {
-            this.child('#inputItem').setValue(pageData.currentPage);
-            return false;
+        if (inputItem) {
+            v = inputItem.getValue();
+            pageNum = parseInt(v, 10);
+            if (!v || isNaN(pageNum)) {
+                inputItem.setValue(pageData.currentPage);
+                return false;
+            }
         }
         return pageNum;
     },
 
     onPagingFocus : function(){
-        this.child('#inputItem').select();
+        var inputItem = this.getInputItem();
+        if (inputItem) {
+            inputItem.select();
+        }
     },
 
-    //private
+    // @private
     onPagingBlur : function(e){
-        var curPage = this.getPageData().currentPage;
-        this.child('#inputItem').setValue(curPage);
+        var inputItem = this.getInputItem(),
+            curPage;
+            
+        if (inputItem) {
+            curPage = this.getPageData().currentPage;
+            inputItem.setValue(curPage);
+        }
     },
 
-    // private
+    // @private
     onPagingKeyDown : function(field, e){
         var me = this,
             k = e.getKey(),
@@ -500,10 +551,10 @@ Ext.define('Ext.toolbar.Paging', {
         }
     },
 
-    // private
+    // @private
     beforeLoad : function(){
-        if(this.rendered && this.refresh){
-            this.refresh.disable();
+        if (this.rendered) {
+            this.setChildDisabled('#refresh', true);
         }
     },
 
@@ -593,7 +644,7 @@ Ext.define('Ext.toolbar.Paging', {
         this.bindStore(store);
     },
 
-    // private
+    // @private
     onDestroy : function(){
         this.unbind();
         this.callParent();

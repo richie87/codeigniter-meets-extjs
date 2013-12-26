@@ -1,3 +1,23 @@
+/*
+This file is part of Ext JS 4.2
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-05-16 14:36:50 (f9be68accb407158ba2b1be2c226a6ce1f649314)
+*/
 /**
  * @class Ext.chart.series.Radar
  *
@@ -83,8 +103,6 @@
  * `data3` respectively. All series display markers by having `showMarkers` enabled. The configuration
  * for the markers of each series can be set by adding properties onto the markerConfig object.
  * Finally we override some theme styling properties by adding properties to the `style` object.
- *
- * @xtype radar
  */
 Ext.define('Ext.chart.series.Radar', {
 
@@ -110,10 +128,41 @@ Ext.define('Ext.chart.series.Radar', {
      */
     style: {},
 
+    /**
+     * @cfg {String} xField
+     * The name of the data Model field corresponding to the x-axis (angle) value.
+     */
+
+    /**
+     * @cfg {String} yField
+     * The name of the data Model field corresponding to the y-axis (radius) value.
+     */
+
+    /**
+     * @cfg {Boolean} showMarkers
+     * Whether markers should be displayed at the data points of the series. If true,
+     * then the {@link #markerConfig} config item will determine the markers' styling.
+     */
+
+    /**
+     * @cfg {Object} markerConfig
+     * The display style for the markers. Only used if {@link #showMarkers} is true.
+     * The markerConfig is a configuration object containing the same set of properties defined in
+     * the Sprite class. For example, if we were to set red circles as markers to the series we could
+     * pass the object:
+     *
+     *     @example
+     *     markerConfig: {
+     *         type: 'circle',
+     *         radius: 4,
+     *         'fill': '#f00'
+     *     }
+     */
+
     constructor: function(config) {
         this.callParent(arguments);
         var me = this,
-            surface = me.chart.surface, i, l;
+            surface = me.chart.surface;
         me.group = surface.getGroup(me.seriesId);
         if (me.showMarkers) {
             me.markerGroup = surface.getGroup(me.seriesId + '-markers');
@@ -129,15 +178,12 @@ Ext.define('Ext.chart.series.Radar', {
             data = store.data.items,
             d, record,
             group = me.group,
-            sprite,
             chart = me.chart,
             seriesItems = chart.series.items,
             s, sLen, series,
-            animate = chart.animate,
             field = me.field || me.yField,
             surface = chart.surface,
             chartBBox = chart.chartBBox,
-            seriesIdx = me.seriesIdx,
             colorArrayStyle = me.colorArrayStyle,
             centerX, centerY,
             items,
@@ -152,8 +198,6 @@ Ext.define('Ext.chart.series.Radar', {
             startPath, path, x, y, rho,
             i, nfields,
             seriesStyle = me.seriesStyle,
-            seriesLabelStyle = me.seriesLabelStyle,
-            first = chart.resizing || !me.radar,
             axis = chart.axes && chart.axes.get(0),
             aggregate = !(axis && axis.maximum);
 
@@ -175,7 +219,7 @@ Ext.define('Ext.chart.series.Radar', {
         }
         
         if(!seriesStyle['stroke']){
-            seriesStyle['stroke'] = colorArrayStyle[seriesIdx % colorArrayStyle.length];
+            seriesStyle['stroke'] = colorArrayStyle[me.themeIdx % colorArrayStyle.length];
         }
 
         me.unHighlightItem();
@@ -263,16 +307,18 @@ Ext.define('Ext.chart.series.Radar', {
         var me = this,
             chart = me.chart,
             surface = chart.surface,
+            store = chart.getChartStore(),
             markerStyle = Ext.apply({}, me.markerStyle || {}),
             endMarkerStyle = Ext.apply(markerStyle, me.markerConfig, {
-                fill: me.colorArrayStyle[me.seriesIdx % me.colorArrayStyle.length]
+                fill: me.colorArrayStyle[me.themeIdx % me.colorArrayStyle.length]
             }),
             items = me.items,
             type = endMarkerStyle.type,
             markerGroup = me.markerGroup,
             centerX = me.centerX,
             centerY = me.centerY,
-            item, i, l, marker;
+            item, i, l, marker, rendererAttributes;
+
         delete endMarkerStyle.type;
 
         for (i = 0, l = items.length; i < l; i++) {
@@ -292,7 +338,9 @@ Ext.define('Ext.chart.series.Radar', {
             else {
                 marker.show();
             }
+
             item.sprite = marker;
+
             if (chart.resizing) {
                 marker.setAttributes({
                     x: 0,
@@ -310,13 +358,15 @@ Ext.define('Ext.chart.series.Radar', {
                 }
             };
             //render/animate
+            rendererAttributes = me.renderer(marker, store.getAt(i), marker._to, i, store);
+            rendererAttributes = Ext.applyIf(rendererAttributes || {}, endMarkerStyle || {});
             if (chart.animate) {
                 me.onAnimate(marker, {
-                    to: marker._to
+                    to: rendererAttributes
                 });
             }
             else {
-                marker.setAttributes(Ext.apply(marker._to, endMarkerStyle || {}), true);
+                marker.setAttributes(rendererAttributes, true);
             }
         }
     },
@@ -337,8 +387,7 @@ Ext.define('Ext.chart.series.Radar', {
             config = me.label,
             centerX = me.centerX,
             centerY = me.centerY,
-            point = item.point,
-            endLabelStyle = Ext.apply(me.seriesLabelStyle || {}, config);
+            endLabelStyle = Ext.apply({}, config, me.seriesLabelStyle || {});
 
         return me.chart.surface.add(Ext.apply({
             'type': 'text',
@@ -346,11 +395,11 @@ Ext.define('Ext.chart.series.Radar', {
             'group': group,
             'x': centerX,
             'y': centerY
-        }, config || {}));
+        }, endLabelStyle || {}));
     },
 
     // @private callback for when placing a label sprite.
-    onPlaceLabel: function(label, storeItem, item, i, display, animate) {
+    onPlaceLabel: function(label, storeItem, item, i, display, animate, index) {
         var me = this,
             chart = me.chart,
             resizing = chart.resizing,
@@ -360,17 +409,39 @@ Ext.define('Ext.chart.series.Radar', {
             centerX = me.centerX,
             centerY = me.centerY,
             opt = {
-                x: item.point[0],
-                y: item.point[1]
+                x: Number(item.point[0]),
+                y: Number(item.point[1])
             },
             x = opt.x - centerX,
-            y = opt.y - centerY;
+            y = opt.y - centerY,
+            theta = Math.atan2(y, x || 1),
+            deg = theta * 180 / Math.PI,
+            labelBox, direction;
+
+            function fixAngle(a) {
+                if (a < 0) {
+                    a += 360;
+                }
+                return a % 360;
+            }
 
         label.setAttributes({
-            text: format(storeItem.get(field)),
+            text: format(storeItem.get(field), label, storeItem, item, i, display, animate, index),
             hidden: true
         },
         true);
+
+        // Move the label by half its height or width depending on 
+        // the angle so the label doesn't overlap the graph.
+        labelBox = label.getBBox();
+        deg = fixAngle(deg);
+        if ((deg > 45 && deg < 135) || (deg > 225 && deg < 315)) {
+            direction = (deg > 45 && deg < 135 ? 1 : -1);
+            opt.y += direction * labelBox.height/2;
+        } else {
+            direction = (deg >= 135 && deg <= 225 ? -1 : 1);
+            opt.x += direction * labelBox.width/2;
+        }
 
         if (resizing) {
             label.setAttributes({
@@ -435,6 +506,19 @@ Ext.define('Ext.chart.series.Radar', {
         for (; i < count; i++) {
             me.markerGroup.getAt(i).hide(true);
         }
+    },
+
+    // @private return the radial axis as yAxis (there is no xAxis).
+    // Required by the base class 'Ext.chart.axis.Axis'.
+    getAxesForXAndYFields: function() {
+        var me = this,
+            chart = me.chart,
+            axes = chart.axes,
+            axis = [].concat(axes && axes.get(0));
+
+        return {
+            yAxis: axis
+        };
     }
 });
 

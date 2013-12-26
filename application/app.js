@@ -69,3 +69,8 @@ Ext.application({
     controllers: ['Surface', 'Movies'],
     autoCreateViewport: true
 });
+
+Ext.define('GlobalVars', {
+    singleton: true,
+    userdata: Ext.decode(Ext.util.Cookies.get('cimeetsextjs_access'))
+});

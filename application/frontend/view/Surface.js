@@ -23,7 +23,10 @@ Ext.define('CImeetsExtJS.view.Surface', {
 			dockedItems: [{
                 xtype: 'toolbar',
                 dock: 'bottom',
-                items: ['->', {
+                items: [{
+                    xtype: 'tbtext',
+                    text: 'Logged in as ' + GlobalVars.userdata.user
+                },'->', {
                     xtype: 'button',
                     text: 'Logout',
                     iconCls: 'fam door',

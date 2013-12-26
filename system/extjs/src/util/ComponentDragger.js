@@ -1,3 +1,23 @@
+/*
+This file is part of Ext JS 4.2
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-05-16 14:36:50 (f9be68accb407158ba2b1be2c226a6ce1f649314)
+*/
 /**
  * A subclass of Ext.dd.DragTracker which handles dragging any Component.
  *
@@ -51,7 +71,7 @@ Ext.define('Ext.util.ComponentDragger', {
             comp = me.comp;
 
         // Cache the start [X, Y] array
-        this.startPosition = comp.el.getXY();
+        me.startPosition = comp.getXY();
 
         // If client Component has a ghost method to show a lightweight version of itself
         // then use that as a drag proxy unless configured to liveDrag.
@@ -73,20 +93,35 @@ Ext.define('Ext.util.ComponentDragger', {
     calculateConstrainRegion: function() {
         var me = this,
             comp = me.comp,
-            c = me.initialConstrainTo,
+            constrainTo = me.initialConstrainTo,
+            constraintInsets = comp.constraintInsets,
+            constrainEl,
             delegateRegion,
             elRegion,
             dragEl = me.proxy ? me.proxy.el : comp.el,
-            shadowSize = (!me.constrainDelegate && dragEl.shadow && !dragEl.shadowDisabled) ? dragEl.shadow.getShadowSize() : 0;
+            shadowSize = (!me.constrainDelegate && dragEl.shadow && comp.constrainShadow && !dragEl.shadowDisabled) ? dragEl.shadow.getShadowSize() : 0;
 
         // The configured constrainTo might be a Region or an element
-        if (!(c instanceof Ext.util.Region)) {
-            c =  Ext.fly(c).getViewRegion();
+        if (!(constrainTo instanceof Ext.util.Region)) {
+            constrainEl = Ext.fly(constrainTo);
+            constrainTo =  constrainEl.getViewRegion();
+
+            // Do not allow to move into vertical scrollbar
+            constrainTo.right = constrainTo.left + constrainEl.dom.clientWidth;
+        } else {
+            // Create a clone so we don't modify the original
+            constrainTo = constrainTo.copy();
+        }
+
+        // Apply constraintInsets
+        if (constraintInsets) {
+            constraintInsets = Ext.isObject(constraintInsets) ? constraintInsets : Ext.Element.parseBox(constraintInsets);
+            constrainTo.adjust(constraintInsets.top, constraintInsets.right, constraintInsets.bottom, constraintInsets.length);
         }
 
         // Reduce the constrain region to allow for shadow
         if (shadowSize) {
-            c.adjust(shadowSize[0], -shadowSize[1], -shadowSize[2], shadowSize[3]);
+            constrainTo.adjust(shadowSize[0], -shadowSize[1], -shadowSize[2], shadowSize[3]);
         }
 
         // If they only want to constrain the *delegate* to within the constrain region,
@@ -96,14 +131,14 @@ Ext.define('Ext.util.ComponentDragger', {
             delegateRegion = Ext.fly(me.dragTarget).getRegion();
             elRegion = dragEl.getRegion();
 
-            c.adjust(
+            constrainTo.adjust(
                 delegateRegion.top - elRegion.top,
                 delegateRegion.right - elRegion.right,
                 delegateRegion.bottom - elRegion.bottom,
                 delegateRegion.left - elRegion.left
             );
         }
-        return c;
+        return constrainTo;
     },
 
     // Move either the ghost Component or the target Component to its new position on drag
@@ -117,6 +152,10 @@ Ext.define('Ext.util.ComponentDragger', {
 
     onEnd: function(e) {
         var comp = this.comp;
+        if (comp.isDestroyed || comp.destroying) {
+            return;
+        }
+        
         if (this.proxy && !comp.liveDrag) {
             comp.unghost();
         }

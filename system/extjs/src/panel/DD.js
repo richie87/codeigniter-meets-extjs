@@ -1,3 +1,23 @@
+/*
+This file is part of Ext JS 4.2
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-05-16 14:36:50 (f9be68accb407158ba2b1be2c226a6ce1f649314)
+*/
 /**
  * DD implementation for Panels.
  * @private
@@ -58,7 +78,10 @@ Ext.define('Ext.panel.DD', {
     createFrame : Ext.emptyFn,
     
     getDragEl : function(e){
-        return this.panelProxy.ghost.el.dom;
+        var ghost = this.panelProxy.ghost;
+        if (ghost) {
+            return ghost.el.dom;
+        }
     },
     
     endDrag : function(e){
@@ -77,23 +100,24 @@ Ext.define('Ext.panel.DD', {
     onInvalidDrop: function(target, e, id) {
         var me = this;
         
-        me.beforeInvalidDrop(target, e, id);
-        if (me.cachedTarget) {
-            if(me.cachedTarget.isNotifyTarget){
-                me.cachedTarget.notifyOut(me, e, me.dragData);
+        if (me.beforeInvalidDrop(target, e, id) !== false) {
+            if (me.cachedTarget) {
+                if(me.cachedTarget.isNotifyTarget){
+                    me.cachedTarget.notifyOut(me, e, me.dragData);
+                }
+                me.cacheTarget = null;
             }
-            me.cacheTarget = null;
-        }
 
-        if (me.afterInvalidDrop) {
-            /**
-             * An empty function by default, but provided so that you can perform a custom action
-             * after an invalid drop has occurred by providing an implementation.
-             * @param {Event} e The event object
-             * @param {String} id The id of the dropped element
-             * @method afterInvalidDrop
-             */
-            me.afterInvalidDrop(e, id);
+            if (me.afterInvalidDrop) {
+                /**
+                * An empty function by default, but provided so that you can perform a custom action
+                * after an invalid drop has occurred by providing an implementation.
+                * @param {Event} e The event object
+                * @param {String} id The id of the dropped element
+                * @method afterInvalidDrop
+                */
+                me.afterInvalidDrop(e, id);
+            }
         }
     }
 });
