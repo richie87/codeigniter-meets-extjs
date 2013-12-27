@@ -15,7 +15,10 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext'>/**
+  <pre class="prettyprint lang-js">// @tag foundation,core
+// @define Ext
+
+<span id='Ext'>/**
 </span> * @class Ext
  * @singleton
  */
@@ -26,7 +29,7 @@ Ext._startTime = new Date().getTime();
         objectPrototype = Object.prototype,
         toString = objectPrototype.toString,
         enumerables = true,
-        enumerablesTest = { toString: 1 },
+        enumerablesTest = {toString: 1},
         emptyFn = function () {},
         // This is the &quot;$previous&quot; method of a hook function on an instance. When called, it
         // calls through the class prototype by the name of the called method.
@@ -34,7 +37,12 @@ Ext._startTime = new Date().getTime();
             var method = callOverrideParent.caller.caller; // skip callParent (our caller)
             return method.$owner.prototype[method.$name].apply(this, arguments);
         },
-        i;
+        i,
+        nonWhitespaceRe = /\S/,
+        ExtApp,
+        iterableRe = /\[object\s*(?:Array|Arguments|\w*Collection|\w*List|HTML\s+document\.all\s+class)\]/;
+
+    Function.prototype.$extIsFunction = true;
 
     Ext.global = global;
 
@@ -88,8 +96,7 @@ Ext._startTime = new Date().getTime();
     };
 
     Ext.buildSettings = Ext.apply({
-        baseCSSPrefix: 'x-',
-        scopeResetCSS: false
+        baseCSSPrefix: 'x-'
     }, Ext.buildSettings || {});
 
     Ext.apply(Ext, {
@@ -104,9 +111,17 @@ Ext._startTime = new Date().getTime();
         name: Ext.sandboxName || 'Ext',
 
 <span id='Ext-property-emptyFn'>        /**
-</span>         * A reusable empty function
+</span>         * @property {Function}
+         * A reusable empty function
          */
         emptyFn: emptyFn,
+        
+<span id='Ext-method-identityFn'>        /**
+</span>         * A reusable identity function. The function will always return the first argument, unchanged.
+         */
+        identityFn: function(o) {
+            return o;
+        },
 
 <span id='Ext-property-emptyString'>        /**
 </span>         * A zero length string which will pass a truth test. Useful for passing to methods
@@ -384,7 +399,7 @@ Ext._startTime = new Date().getTime();
             if (type === 'object') {
                 if (value.nodeType !== undefined) {
                     if (value.nodeType === 3) {
-                        return (/\S/).test(value.nodeValue) ? 'textnode' : 'whitespace';
+                        return (nonWhitespaceRe).test(value.nodeValue) ? 'textnode' : 'whitespace';
                     }
                     else {
                         return 'element';
@@ -401,6 +416,49 @@ Ext._startTime = new Date().getTime();
                 msg: 'Failed to determine the type of the specified value &quot;' + value + '&quot;. This is most likely a bug.'
             });
             //&lt;/debug&gt;
+        },
+
+<span id='Ext-method-coerce'>        /**
+</span>         * Coerces the first value if possible so that it is comparable to the second value.
+         *
+         * Coercion only works between the basic atomic data types String, Boolean, Number, Date, null and undefined.
+         *
+         * Numbers and numeric strings are coerced to Dates using the value as the millisecond era value.
+         *
+         * Strings are coerced to Dates by parsing using the {@link Ext.Date#defaultFormat defaultFormat}.
+         * 
+         * For example
+         *
+         *     Ext.coerce('false', true);
+         *     
+         * returns the boolean value `false` because the second parameter is of type `Boolean`.
+         * 
+         * @param {Mixed} from The value to coerce
+         * @param {Mixed} to The value it must be compared against
+         * @return The coerced value.
+         */
+        coerce: function(from, to) {
+            var fromType = Ext.typeOf(from),
+                toType = Ext.typeOf(to),
+                isString = typeof from === 'string';
+
+            if (fromType !== toType) {
+                switch (toType) {
+                    case 'string':
+                        return String(from);
+                    case 'number':
+                        return Number(from);
+                    case 'boolean':
+                        return isString &amp;&amp; (!from || from === 'false') ? false : Boolean(from);
+                    case 'null':
+                        return isString &amp;&amp; (!from || from === 'null') ? null : from;
+                    case 'undefined':
+                        return isString &amp;&amp; (!from || from === 'undefined') ? undefined : from;
+                    case 'date':
+                        return isString &amp;&amp; isNaN(from) ? Ext.Date.parse(from, Ext.Date.defaultFormat) : Date(Number(from));
+                }
+            }
+            return from;
         },
 
 <span id='Ext-method-isEmpty'>        /**
@@ -478,13 +536,8 @@ Ext._startTime = new Date().getTime();
          * @return {Boolean}
          * @method
          */
-        isFunction:
-        // Safari 3.x and 4.x returns 'function' for typeof &lt;NodeList&gt;, hence we need to fall back to using
-        // Object.prototype.toString (slower)
-        (typeof document !== 'undefined' &amp;&amp; typeof document.getElementsByTagName('body') === 'function') ? function(value) {
-            return toString.call(value) === '[object Function]';
-        } : function(value) {
-            return typeof value === 'function';
+        isFunction: function(value) {
+            return !!(value &amp;&amp; value.$extIsFunction);
         },
 
 <span id='Ext-method-isNumber'>        /**
@@ -552,26 +605,36 @@ Ext._startTime = new Date().getTime();
         },
 
 <span id='Ext-method-isIterable'>        /**
-</span>         * Returns true if the passed value is iterable, false otherwise
+</span>         * Returns `true` if the passed value is iterable, that is, if elements of it are addressable using array
+         * notation with numeric indices, `false` otherwise.
+         *
+         * Arrays and function `arguments` objects are iterable. Also HTML collections such as `NodeList` and `HTMLCollection'
+         * are iterable.
+         *
          * @param {Object} value The value to test
          * @return {Boolean}
          */
         isIterable: function(value) {
-            var type = typeof value,
-                checkLength = false;
-            if (value &amp;&amp; type != 'string') {
-                // Functions have a length property, so we need to filter them out
-                if (type == 'function') {
-                    // In Safari, NodeList/HTMLCollection both return &quot;function&quot; when using typeof, so we need
-                    // to explicitly check them here.
-                    if (Ext.isSafari) {
-                        checkLength = value instanceof NodeList || value instanceof HTMLCollection;
-                    }
-                } else {
-                    checkLength = true;
-                }
+            // To be iterable, the object must have a numeric length property and must not be a string or function.
+            if (!value || typeof value.length !== 'number' || typeof value === 'string' || value.$extIsFunction) {
+                return false;
             }
-            return checkLength ? value.length !== undefined : false;
+
+            // Certain &quot;standard&quot; collections in IE (such as document.images) do not offer the correct
+            // Javascript Object interface; specifically, they lack the propertyIsEnumerable method.
+            // And the item property while it does exist is not typeof &quot;function&quot;
+            if (!value.propertyIsEnumerable) {
+                return !!value.item;
+            }
+
+            // If it is a regular, interrogatable JS object (not an IE ActiveX object), then...
+            // If it has its own property called &quot;length&quot;, but not enumerable, it's iterable
+            if (value.hasOwnProperty('length') &amp;&amp; !value.propertyIsEnumerable('length')) {
+                return true;
+            }
+
+            // Test against whitelist which includes known iterable collection types
+            return iterableRe.test(toString.call(value));
         }
     });
 
@@ -633,7 +696,9 @@ Ext._startTime = new Date().getTime();
                 if (enumerables) {
                     for (j = enumerables.length; j--;) {
                         k = enumerables[j];
-                        clone[k] = item[k];
+                        if (item.hasOwnProperty(k)) {
+                            clone[k] = item[k];
+                        }
                     }
                 }
             }
@@ -730,7 +795,79 @@ Ext._startTime = new Date().getTime();
      * @inheritdoc Ext#typeOf
      */
     Ext.type = Ext.typeOf;
+    
+    // When using Cmd optimizations, the namespace Ext.app may already be defined
+    // by this point since it's done up front by the tool. Check if app already
+    // exists before overwriting it.
+    ExtApp = Ext.app;
+    if (!ExtApp) {
+        ExtApp = Ext.app = {};
+    }
+    Ext.apply(ExtApp, {
+        namespaces: {},
+        
+<span id='Ext-method-collectNamespaces'>        /**
+</span>        * @private
+        */
+        collectNamespaces: function(paths) {
+            var namespaces = Ext.app.namespaces,
+                path;
+            
+            for (path in paths) {
+                if (paths.hasOwnProperty(path)) {
+                    namespaces[path] = true;
+                }
+            }
+        },
 
+<span id='Ext-method-addNamespaces'>        /**
+</span>        * Adds namespace(s) to known list.
+        *
+        * @param {String/String[]} namespace
+        */
+        addNamespaces: function(ns) {
+            var namespaces = Ext.app.namespaces,
+                i, l;
+
+            if (!Ext.isArray(ns)) {
+                ns = [ns];
+            }
+
+            for (i = 0, l = ns.length; i &lt; l; i++) {
+                namespaces[ns[i]] = true;
+            }
+        },
+
+<span id='Ext-method-clearNamespaces'>        /**
+</span>        * @private Clear all namespaces from known list.
+        */
+        clearNamespaces: function() {
+            Ext.app.namespaces = {};
+        },
+
+<span id='Ext-method-getNamespace'>        /**
+</span>        * Get namespace prefix for a class name.
+        *
+        * @param {String} className
+        *
+        * @return {String} Namespace prefix if it's known, otherwise undefined
+        */
+        getNamespace: function(className) {
+            var namespaces    = Ext.app.namespaces,
+                deepestPrefix = '',
+                prefix;
+
+            for (prefix in namespaces) {
+                if (namespaces.hasOwnProperty(prefix)    &amp;&amp;
+                    prefix.length &gt; deepestPrefix.length &amp;&amp;
+                    (prefix + '.' === className.substring(0, prefix.length + 1))) {
+                    deepestPrefix = prefix;
+                }
+            }
+
+            return deepestPrefix === '' ? undefined : deepestPrefix;
+        }
+    });
 }());
 
 /*
@@ -748,6 +885,10 @@ Ext.globalEval = Ext.global.execScript
         // IMPORTANT: because we use eval we cannot place this in the above function or it
         // will break the compressor's ability to rename local variables...
         (function(){
+            // This var should not be replaced by the compressor. We need to do this so
+            // that Ext refers to the global Ext, if we're sandboxing it may
+            // refer to the local instance inside the closure
+            var Ext = this.Ext;
             eval($$code);
         }());
     };

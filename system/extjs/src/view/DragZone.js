@@ -1,3 +1,23 @@
+/*
+This file is part of Ext JS 4.2
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-05-16 14:36:50 (f9be68accb407158ba2b1be2c226a6ce1f649314)
+*/
 /**
  * @private
  */
@@ -57,20 +77,16 @@ Ext.define('Ext.view.DragZone', {
         // focus the view that the node was dropped onto so that keynav will be enabled.
         target.el.focus();
     },
-    
+
     onItemMouseDown: function(view, record, item, index, e) {
         if (!this.isPreventDrag(e, record, item, index)) {
             // Since handleMouseDown prevents the default behavior of the event, which
             // is to focus the view, we focus the view now.  This ensures that the view
             // remains focused if the drag is cancelled, or if no drag occurs.
-            this.view.focus();
-            this.handleMouseDown(e);
-
-            // If we want to allow dragging of multi-selections, then veto the following handlers (which, in the absence of ctrlKey, would deselect)
-            // if the mousedowned record is selected
-            if (view.getSelectionModel().selectionMode == 'MULTI' && !e.ctrlKey && view.getSelectionModel().isSelected(record)) {
-                return false;
+            if (view.focusRow) {
+                view.focusRow(record);
             }
+            this.handleMouseDown(e);
         }
     },
 
@@ -101,8 +117,7 @@ Ext.define('Ext.view.DragZone', {
             data = me.dragData,
             view = data.view,
             selectionModel = view.getSelectionModel(),
-            record = view.getRecord(data.item),
-            e = data.event;
+            record = view.getRecord(data.item);
 
         // Update the selection to match what would have been selected if the user had
         // done a full click on the target node rather than starting a drag from it

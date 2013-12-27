@@ -1,3 +1,23 @@
+/*
+This file is part of Ext JS 4.2
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-05-16 14:36:50 (f9be68accb407158ba2b1be2c226a6ce1f649314)
+*/
 /**
  * @docauthor Jason Johnston <jason@sencha.com>
  * 
@@ -140,9 +160,8 @@ Ext.define('Ext.form.Panel', {
      */
 
     /**
-     * @cfg {String} layout
+     * @cfg {Ext.enums.Layout/Object} layout
      * The {@link Ext.container.Container#layout} for the form panel's immediate child items.
-     * Defaults to `'anchor'`.
      */
     layout: 'anchor',
 
@@ -152,6 +171,7 @@ Ext.define('Ext.form.Panel', {
         'api', 
         'baseParams', 
         'errorReader', 
+        'jsonSubmit',
         'method', 
         'paramOrder',
         'paramsAsHash',
@@ -210,15 +230,14 @@ Ext.define('Ext.form.Panel', {
 
     initItems: function() {
         // Create the BasicForm
-        var me = this;
-
-        me.form = me.createForm();
-        me.callParent();
+        this.callParent();
+        this.initMonitor();
+        this.form = this.createForm();
     },
 
     // Initialize the BasicForm after all layouts have been completed.
     afterFirstLayout: function() {
-        this.callParent();
+        this.callParent(arguments);
         this.form.initialize();
     },
 
@@ -264,6 +283,16 @@ Ext.define('Ext.form.Panel', {
     getRecord: function() {
         return this.getForm().getRecord();
     },
+    
+    /**
+     * Persists the values in this form into the passed {@link Ext.data.Model} object in a beginEdit/endEdit block.
+     * If the record is not specified, it will attempt to update (if it exists) the record provided to {@link #loadRecord}.
+     * @param {Ext.data.Model} [record] The record to edit
+     * @return {Ext.form.Basic} The Ext.form.Basic attached to this FormPanel
+     */
+    updateRecord: function(record) {
+        return this.getForm().updateRecord(record);
+    },
 
     /**
      * Convenience function for fetching the current value of each field in the form. This is the same as calling
@@ -273,6 +302,36 @@ Ext.define('Ext.form.Panel', {
      */
     getValues: function(asString, dirtyOnly, includeEmptyText, useDataValues) {
         return this.getForm().getValues(asString, dirtyOnly, includeEmptyText, useDataValues);
+    },
+    
+    /**
+     * Convenience function to check if the form has any dirty fields. This is the same as calling
+     * {@link Ext.form.Basic#isDirty this.getForm().isDirty()}.
+     *
+     * @inheritdoc Ext.form.Basic#isDirty
+     */
+    isDirty: function () {
+        return this.form.isDirty();
+    },
+    
+    /**
+     * Convenience function to check if the form has all valid fields. This is the same as calling
+     * {@link Ext.form.Basic#isValid this.getForm().isValid()}.
+     *
+     * @inheritdoc Ext.form.Basic#isValid
+     */
+    isValid: function () {
+       return this.form.isValid();
+    },
+    
+    /**
+     * Convenience function to check if the form has any invalid fields. This is the same as calling
+     * {@link Ext.form.Basic#hasInvalidField this.getForm().hasInvalidField()}.
+     *
+     * @inheritdoc Ext.form.Basic#hasInvalidField
+     */
+    hasInvalidField: function () {
+        return this.form.hasInvalidField();
     },
 
     beforeDestroy: function() {
@@ -333,8 +392,7 @@ Ext.define('Ext.form.Panel', {
     checkChange: function() {
         var fields = this.form.getFields().items,
             f,
-            fLen   = fields.length,
-            field;
+            fLen   = fields.length;
 
         for (f = 0; f < fLen; f++) {
             fields[f].checkChange();

@@ -31,6 +31,13 @@ Ext.define('Ext.dd.DragSource', {
      * interact with other drag drop objects in the same group.
      */
 
+<span id='Ext-dd-DragSource-property-dragData'>    /**
+</span>     * @property {Object} dragData
+     * This property contains the data representing the dragged object. This data is set up by the implementation of the
+     * {@link #getDragData} method. It must contain a ddel property, but can contain any other data according to the
+     * application's needs.
+     */
+
 <span id='Ext-dd-DragSource-cfg-dropAllowed'>    /**
 </span>     * @cfg {String} dropAllowed
      * The CSS class returned to the drag source when drop is allowed.
@@ -89,8 +96,8 @@ Ext.define('Ext.dd.DragSource', {
         return this.dragData;
     },
 
-    // private
-    onDragEnter : function(e, id){
+<span id='Ext-dd-DragSource-method-onDragEnter'>    // @private
+</span>    onDragEnter : function(e, id){
         var target = Ext.dd.DragDropManager.getDDById(id),
             status;
         this.cachedTarget = target;
@@ -129,8 +136,8 @@ Ext.define('Ext.dd.DragSource', {
         return true;
     },
 
-    // private
-    onDragOver: function(e, id) {
+<span id='Ext-dd-DragSource-method-onDragOver'>    // @private
+</span>    onDragOver: function(e, id) {
         var target = this.cachedTarget || Ext.dd.DragDropManager.getDDById(id),
             status;
         if (this.beforeDragOver(target, e, id) !== false) {
@@ -166,8 +173,8 @@ Ext.define('Ext.dd.DragSource', {
         return true;
     },
 
-    // private
-    onDragOut: function(e, id) {
+<span id='Ext-dd-DragSource-method-onDragOut'>    // @private
+</span>    onDragOut: function(e, id) {
         var target = this.cachedTarget || Ext.dd.DragDropManager.getDDById(id);
         if (this.beforeDragOut(target, e, id) !== false) {
             if (target.isNotifyTarget) {
@@ -202,8 +209,8 @@ Ext.define('Ext.dd.DragSource', {
         return true;
     },
 
-    // private
-    onDragDrop: function(e, id){
+<span id='Ext-dd-DragSource-method-onDragDrop'>    // @private
+</span>    onDragDrop: function(e, id){
         var target = this.cachedTarget || Ext.dd.DragDropManager.getDDById(id);
         if (this.beforeDragDrop(target, e, id) !== false) {
             if (target.isNotifyTarget) {
@@ -244,8 +251,8 @@ Ext.define('Ext.dd.DragSource', {
         return true;
     },
 
-    // private
-    onValidDrop: function(target, e, id){
+<span id='Ext-dd-DragSource-method-onValidDrop'>    // @private
+</span>    onValidDrop: function(target, e, id){
         this.hideProxy();
         if(this.afterValidDrop){
 <span id='Ext-dd-DragSource-method-afterValidDrop'>            /**
@@ -260,44 +267,47 @@ Ext.define('Ext.dd.DragSource', {
         }
     },
 
-    // private
-    getRepairXY: function(e, data){
+<span id='Ext-dd-DragSource-method-getRepairXY'>    // @private
+</span>    getRepairXY: function(e, data){
         return this.el.getXY();
     },
 
-    // private
-    onInvalidDrop: function(target, e, id) {
+<span id='Ext-dd-DragSource-method-onInvalidDrop'>    // @private
+</span>    onInvalidDrop: function(target, e, id) {
         // This method may be called by the DragDropManager.
         // To preserve backwards compat, it only passes the event object
         // Here we correct the arguments.
+        var me = this;
+        
         if (!e) {
             e = target;
             target = null;
             id = e.getTarget().id;
         }
-        this.beforeInvalidDrop(target, e, id);
-        if (this.cachedTarget) {
-            if(this.cachedTarget.isNotifyTarget){
-                this.cachedTarget.notifyOut(this, e, this.dragData);
+        if (me.beforeInvalidDrop(target, e, id) !== false) {
+            if (me.cachedTarget) {
+                if(me.cachedTarget.isNotifyTarget){
+                    me.cachedTarget.notifyOut(me, e, me.dragData);
+                }
+                me.cacheTarget = null;
             }
-            this.cacheTarget = null;
-        }
-        this.proxy.repair(this.getRepairXY(e, this.dragData), this.afterRepair, this);
+            me.proxy.repair(me.getRepairXY(e, me.dragData), me.afterRepair, me);
 
-        if (this.afterInvalidDrop) {
-<span id='Ext-dd-DragSource-method-afterInvalidDrop'>            /**
-</span>             * An empty function by default, but provided so that you can perform a custom action
-             * after an invalid drop has occurred by providing an implementation.
-             * @param {Event} e The event object
-             * @param {String} id The id of the dropped element
-             * @method afterInvalidDrop
-             */
-            this.afterInvalidDrop(e, id);
+            if (me.afterInvalidDrop) {
+<span id='Ext-dd-DragSource-method-afterInvalidDrop'>                /**
+</span>                * An empty function by default, but provided so that you can perform a custom action
+                * after an invalid drop has occurred by providing an implementation.
+                * @param {Event} e The event object
+                * @param {String} id The id of the dropped element
+                * @method afterInvalidDrop
+                */
+                me.afterInvalidDrop(e, id);
+            }
         }
     },
 
-    // private
-    afterRepair: function() {
+<span id='Ext-dd-DragSource-method-afterRepair'>    // @private
+</span>    afterRepair: function() {
         var me = this;
         if (Ext.enableFx) {
             me.el.highlight(me.repairHighlightColor);
@@ -318,8 +328,8 @@ Ext.define('Ext.dd.DragSource', {
         return true;
     },
 
-    // private
-    handleMouseDown: function(e) {
+<span id='Ext-dd-DragSource-method-handleMouseDown'>    // @private
+</span>    handleMouseDown: function(e) {
         if (this.dragging) {
             return;
         }
@@ -353,13 +363,13 @@ Ext.define('Ext.dd.DragSource', {
      */
     onStartDrag: Ext.emptyFn,
 
-    alignElWithMouse: function() {
-        this.proxy.ensureAttachedToBody(true);
+<span id='Ext-dd-DragSource-method-alignElWithMouse'>    alignElWithMouse: function() {
+</span>        this.proxy.ensureAttachedToBody(true);
         return this.callParent(arguments);
     },
 
-    // private override
-    startDrag: function(x, y) {
+<span id='Ext-dd-DragSource-method-startDrag'>    // @private
+</span>    startDrag: function(x, y) {
         this.proxy.reset();
         this.proxy.hidden = false;
         this.dragging = true;
@@ -368,8 +378,8 @@ Ext.define('Ext.dd.DragSource', {
         this.proxy.show();
     },
 
-    // private
-    onInitDrag: function(x, y) {
+<span id='Ext-dd-DragSource-method-onInitDrag'>    // @private
+</span>    onInitDrag: function(x, y) {
         var clone = this.el.dom.cloneNode(true);
         clone.id = Ext.id(); // prevent duplicate ids
         this.proxy.update(clone);
@@ -394,31 +404,31 @@ Ext.define('Ext.dd.DragSource', {
         this.dragging = false;
     },
 
-    // private
-    triggerCacheRefresh: function() {
+<span id='Ext-dd-DragSource-method-triggerCacheRefresh'>    // @private
+</span>    triggerCacheRefresh: function() {
         Ext.dd.DDM.refreshCache(this.groups);
     },
 
-    // private - override to prevent hiding
-    b4EndDrag: function(e) {
+<span id='Ext-dd-DragSource-method-b4EndDrag'>    // @private
+</span>    b4EndDrag: function(e) {
     },
 
-    // private - override to prevent moving
-    endDrag : function(e){
+<span id='Ext-dd-DragSource-method-endDrag'>    // @private
+</span>    endDrag : function(e){
         this.onEndDrag(this.dragData, e);
     },
 
-    // private
-    onEndDrag : function(data, e){
+<span id='Ext-dd-DragSource-method-onEndDrag'>    // @private
+</span>    onEndDrag : function(data, e){
     },
 
-    // private - pin to cursor
-    autoOffset : function(x, y) {
+<span id='Ext-dd-DragSource-method-autoOffset'>    // @private
+</span>    autoOffset : function(x, y) {
         this.setDelta(-12, -20);
     },
 
-    destroy: function(){
-        this.callParent();
+<span id='Ext-dd-DragSource-method-destroy'>    destroy: function(){
+</span>        this.callParent();
         Ext.destroy(this.proxy);
     }
 });

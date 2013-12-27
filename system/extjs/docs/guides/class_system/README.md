@@ -13,7 +13,7 @@ This manual is intended for any developer who wants to create new or extend exis
 ## I. Overview
 ______________
 
-Ext JS 4 ships with more than 300 classes. We have a huge community of more than 200,000 developers to date, coming from various programming backgrounds all over the world. At that scale of a framework, we face a big challange of providing a common code architecture that is:
+Ext JS 4 ships with more than 300 classes. We have a huge community of more than 200,000 developers to date, coming from various programming backgrounds all over the world. At that scale of a framework, we face a big challenge of providing a common code architecture that is:
 
 - familiar and simple to learn
 - fast to develop, easy to debug, painless to deploy
@@ -164,14 +164,13 @@ In Ext JS 4, we introduce a dedicated `config` property that gets processed by t
 Here's an example:
 
     Ext.define('My.own.Window', {
-       /** @readonly */
+        /** @readonly */
         isWindow: true,
 
         config: {
             title: 'Title Here',
 
             bottomBar: {
-                enabled: true,
                 height: 50,
                 resizable: false
             }
@@ -191,7 +190,7 @@ Here's an example:
         },
 
         applyBottomBar: function(bottomBar) {
-            if (bottomBar && bottomBar.enabled) {
+            if (bottomBar) {
                 if (!this.bottomBar) {
                     return Ext.create('My.own.WindowBottomBar', bottomBar);
                 }
@@ -199,6 +198,14 @@ Here's an example:
                     this.bottomBar.setConfig(bottomBar);
                 }
             }
+        }
+    });
+
+    /** A child component to complete the example. */
+    Ext.define('My.own.WindowBottomBar', {
+        config: {
+            height: undefined,
+            resizable: true
         }
     });
 
@@ -219,7 +226,9 @@ And here's an example of how it can be used:
 
     myWindow.setTitle(null); // alerts "Error: Title must be a valid non-empty string"
 
-    myWindow.setBottomBar({ height: 100 }); // Bottom bar's height is changed to 100
+    myWindow.setBottomBar({ height: 100 });
+
+    alert(myWindow.getBottomBar().getHeight()); // alerts 100
 
 
 ### 3. Statics

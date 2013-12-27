@@ -1,3 +1,23 @@
+/*
+This file is part of Ext JS 4.2
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-05-16 14:36:50 (f9be68accb407158ba2b1be2c226a6ce1f649314)
+*/
 /**
  * @class Ext.chart.series.Scatter
  * @extends Ext.chart.series.Cartesian
@@ -64,8 +84,6 @@
  * `data1`, `data2` and `data3` respectively. All x-fields for the series must be the same field, in this case `name`.
  * Each scatter series has a different styling configuration for markers, specified by the `markerConfig` object. Finally we set the left axis as
  * axis to show the current values of the elements.
- *
- * @xtype scatter
  */
 Ext.define('Ext.chart.series.Scatter', {
 
@@ -88,13 +106,6 @@ Ext.define('Ext.chart.series.Scatter', {
     /**
      * @cfg {Object} style
      * Append styling properties to this object for it to override theme properties.
-     */
-    
-    /**
-     * @cfg {String/Array} axis
-     * The position of the axis to bind the values to. Possible values are 'left', 'bottom', 'top' and 'right'.
-     * You must explicitly set this value to bind the values of the line series to the ones in the axis, otherwise a
-     * relative scale will be used. If multiple axes are being used, they should both be specified in in the configuration.
      */
 
     constructor: function(config) {
@@ -370,7 +381,7 @@ Ext.define('Ext.chart.series.Scatter', {
             rendererAttributes, shadowAttribute;
 
         endMarkerStyle = Ext.apply(me.markerStyle, me.markerConfig);
-        type = endMarkerStyle.type;
+        type = endMarkerStyle.type || 'circle';
         delete endMarkerStyle.type;
 
         //if the store is empty then there's nothing to be rendered
@@ -458,14 +469,15 @@ Ext.define('Ext.chart.series.Scatter', {
 
         return me.chart.surface.add(Ext.apply({
             type: 'text',
+            'text-anchor': 'middle',
             group: group,
-            x: item.point[0],
+            x: Number(item.point[0]),
             y: bbox.y + bbox.height / 2
         }, endLabelStyle));
     },
 
     // @private callback for when placing a label sprite.
-    onPlaceLabel: function(label, storeItem, item, i, display, animate) {
+    onPlaceLabel: function(label, storeItem, item, i, display, animate, index) {
         var me = this,
             chart = me.chart,
             resizing = chart.resizing,
@@ -473,47 +485,63 @@ Ext.define('Ext.chart.series.Scatter', {
             format = config.renderer,
             field = config.field,
             bbox = me.bbox,
-            x = item.point[0],
-            y = item.point[1],
+            x = Number(item.point[0]),
+            y = Number(item.point[1]),
             radius = item.sprite.attr.radius,
-            bb, width, height, anim;
+            labelBox, markerBox, width, height, xOffset, yOffset,
+            anim;
 
         label.setAttributes({
-            text: format(storeItem.get(field)),
+            text: format(storeItem.get(field), label, storeItem, item, i, display, animate, index),
             hidden: true
         }, true);
 
+
+        //TODO(nicolas): find out why width/height values in circle bounding boxes are undefined.
+        markerBox = item.sprite.getBBox();
+        markerBox.width = markerBox.width || (radius * 2);
+        markerBox.height = markerBox.height || (radius * 2);
+
+        labelBox = label.getBBox();
+        width = labelBox.width/2;
+        height = labelBox.height/2;
+
         if (display == 'rotate') {
+            //correct label position to fit into the box
+            xOffset = markerBox.width/2 + width + height/2;
+            if (x + xOffset + width > bbox.x + bbox.width) {
+                x -= xOffset;
+            } else {
+                x += xOffset;
+            }
             label.setAttributes({
-                'text-anchor': 'start',
                 'rotation': {
                     x: x,
                     y: y,
                     degrees: -45
                 }
             }, true);
-            //correct label position to fit into the box
-            bb = label.getBBox();
-            width = bb.width;
-            height = bb.height;
-            x = x < bbox.x? bbox.x : x;
-            x = (x + width > bbox.x + bbox.width)? (x - (x + width - bbox.x - bbox.width)) : x;
-            y = (y - height < bbox.y)? bbox.y + height : y;
-
         } else if (display == 'under' || display == 'over') {
-            //TODO(nicolas): find out why width/height values in circle bounding boxes are undefined.
-            bb = item.sprite.getBBox();
-            bb.width = bb.width || (radius * 2);
-            bb.height = bb.height || (radius * 2);
-            y = y + (display == 'over'? -bb.height : bb.height);
+            label.setAttributes({
+                'rotation': {
+                    degrees: 0
+                }
+            }, true);
+
             //correct label position to fit into the box
-            bb = label.getBBox();
-            width = bb.width/2;
-            height = bb.height/2;
-            x = x - width < bbox.x ? bbox.x + width : x;
-            x = (x + width > bbox.x + bbox.width) ? (x - (x + width - bbox.x - bbox.width)) : x;
-            y = y - height < bbox.y? bbox.y + height : y;
-            y = (y + height > bbox.y + bbox.height) ? (y - (y + height - bbox.y - bbox.height)) : y;
+            if (x < bbox.x + width) {
+                x = bbox.x + width;
+            } else if (x + width > bbox.x + bbox.width) {
+                x = bbox.x + bbox.width - width;
+            }
+
+            yOffset = markerBox.height/2 + height;
+            y = y + (display == 'over' ? -yOffset : yOffset);
+            if (y < bbox.y + height) {
+                y += 2 * yOffset;
+            } else if (y + height > bbox.y + bbox.height) {
+                y -= 2 * yOffset;
+            }
         }
 
         if (!chart.animate) {

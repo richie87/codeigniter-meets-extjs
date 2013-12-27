@@ -98,7 +98,7 @@ Ext.define('Ext.data.JsonP', {
      * &lt;/ul&gt;
      * @return {Object} request An object containing the request details.
      */
-    request: function(options){
+    request: function(options) {
         options = Ext.apply({}, options);
 
         //&lt;debug&gt;
@@ -120,11 +120,14 @@ Ext.define('Ext.data.JsonP', {
             request,
             script;
 
-        params[callbackKey] = name + '.data.JsonP.' + callbackName;
-        if (disableCaching) {
-            params[cacheParam] = new Date().getTime();
-        }
 
+        // Add cachebuster param unless it has already been done
+        if (disableCaching &amp;&amp; !params[cacheParam]) {
+            params[cacheParam] = Ext.Date.now();
+        }
+        options.params = params;
+
+        params[callbackKey] = name + '.data.JsonP.' + callbackName;
         script = me.createScript(url, params, options);
 
         me.requests[id] = request = {
@@ -247,6 +250,7 @@ Ext.define('Ext.data.JsonP', {
             Ext.callback(request.success, request.scope, [result]);
         }
         Ext.callback(request.callback, request.scope, [success, result, request.errorType]);
+        Ext.EventManager.idleEvent.fire();
     },
 
 <span id='Ext-data-JsonP-method-createScript'>    /**

@@ -312,8 +312,8 @@ Ext.define('Ext.toolbar.Paging', {
         }];
     },
 
-    initComponent : function(){
-        var me = this,
+<span id='Ext-toolbar-Paging-method-initComponent'>    initComponent : function(){
+</span>        var me = this,
             pagingItems = me.getPagingItems(),
             userItems   = me.items || me.buttons || [];
 
@@ -373,8 +373,8 @@ Ext.define('Ext.toolbar.Paging', {
 
         me.bindStore(me.store || 'ext-empty-store', true);
     },
-    // private
-    updateInfo : function(){
+<span id='Ext-toolbar-Paging-method-updateInfo'>    // @private
+</span>    updateInfo : function(){
         var me = this,
             displayItem = me.child('#displayItem'),
             store = me.store,
@@ -397,15 +397,16 @@ Ext.define('Ext.toolbar.Paging', {
         }
     },
 
-    // private
-    onLoad : function(){
+<span id='Ext-toolbar-Paging-method-onLoad'>    // @private
+</span>    onLoad : function(){
         var me = this,
             pageData,
             currPage,
             pageCount,
             afterText,
             count,
-            isEmpty;
+            isEmpty,
+            item;
 
         count = me.store.getCount();
         isEmpty = count === 0;
@@ -421,13 +422,19 @@ Ext.define('Ext.toolbar.Paging', {
         }
 
         Ext.suspendLayouts();
-        me.child('#afterTextItem').setText(afterText);
-        me.child('#inputItem').setDisabled(isEmpty).setValue(currPage);
-        me.child('#first').setDisabled(currPage === 1 || isEmpty);
-        me.child('#prev').setDisabled(currPage === 1  || isEmpty);
-        me.child('#next').setDisabled(currPage === pageCount  || isEmpty);
-        me.child('#last').setDisabled(currPage === pageCount  || isEmpty);
-        me.child('#refresh').enable();
+        item = me.child('#afterTextItem');
+        if (item) {    
+            item.setText(afterText);
+        }
+        item = me.getInputItem();
+        if (item) {
+            item.setDisabled(isEmpty).setValue(currPage);
+        }
+        me.setChildDisabled('#first', currPage === 1 || isEmpty);
+        me.setChildDisabled('#prev', currPage === 1 || isEmpty);
+        me.setChildDisabled('#next', currPage === pageCount  || isEmpty);
+        me.setChildDisabled('#last', currPage === pageCount  || isEmpty);
+        me.setChildDisabled('#refresh', false);
         me.updateInfo();
         Ext.resumeLayouts(true);
 
@@ -435,9 +442,16 @@ Ext.define('Ext.toolbar.Paging', {
             me.fireEvent('change', me, pageData);
         }
     },
+    
+<span id='Ext-toolbar-Paging-method-setChildDisabled'>    setChildDisabled: function(selector, disabled){
+</span>        var item = this.child(selector);
+        if (item) {
+            item.setDisabled(disabled);
+        }
+    },
 
-    // private
-    getPageData : function(){
+<span id='Ext-toolbar-Paging-method-getPageData'>    // @private
+</span>    getPageData : function(){
         var store = this.store,
             totalCount = store.getTotalCount();
 
@@ -451,38 +465,55 @@ Ext.define('Ext.toolbar.Paging', {
         };
     },
 
-    // private
-    onLoadError : function(){
+<span id='Ext-toolbar-Paging-method-onLoadError'>    // @private
+</span>    onLoadError : function(){
         if (!this.rendered) {
             return;
         }
-        this.child('#refresh').enable();
+        this.setChildDisabled('#refresh', false);
+    },
+    
+<span id='Ext-toolbar-Paging-method-getInputItem'>    getInputItem: function(){
+</span>        return this.child('#inputItem');
     },
 
-    // private
-    readPageFromInput : function(pageData){
-        var v = this.child('#inputItem').getValue(),
-            pageNum = parseInt(v, 10);
+<span id='Ext-toolbar-Paging-method-readPageFromInput'>    // @private
+</span>    readPageFromInput : function(pageData){
+        var inputItem = this.getInputItem(),
+            pageNum = false,
+            v;
 
-        if (!v || isNaN(pageNum)) {
-            this.child('#inputItem').setValue(pageData.currentPage);
-            return false;
+        if (inputItem) {
+            v = inputItem.getValue();
+            pageNum = parseInt(v, 10);
+            if (!v || isNaN(pageNum)) {
+                inputItem.setValue(pageData.currentPage);
+                return false;
+            }
         }
         return pageNum;
     },
 
-    onPagingFocus : function(){
-        this.child('#inputItem').select();
+<span id='Ext-toolbar-Paging-method-onPagingFocus'>    onPagingFocus : function(){
+</span>        var inputItem = this.getInputItem();
+        if (inputItem) {
+            inputItem.select();
+        }
     },
 
-    //private
-    onPagingBlur : function(e){
-        var curPage = this.getPageData().currentPage;
-        this.child('#inputItem').setValue(curPage);
+<span id='Ext-toolbar-Paging-method-onPagingBlur'>    // @private
+</span>    onPagingBlur : function(e){
+        var inputItem = this.getInputItem(),
+            curPage;
+            
+        if (inputItem) {
+            curPage = this.getPageData().currentPage;
+            inputItem.setValue(curPage);
+        }
     },
 
-    // private
-    onPagingKeyDown : function(field, e){
+<span id='Ext-toolbar-Paging-method-onPagingKeyDown'>    // @private
+</span>    onPagingKeyDown : function(field, e){
         var me = this,
             k = e.getKey(),
             pageData = me.getPageData(),
@@ -517,10 +548,10 @@ Ext.define('Ext.toolbar.Paging', {
         }
     },
 
-    // private
-    beforeLoad : function(){
-        if(this.rendered &amp;&amp; this.refresh){
-            this.refresh.disable();
+<span id='Ext-toolbar-Paging-method-beforeLoad'>    // @private
+</span>    beforeLoad : function(){
+        if (this.rendered) {
+            this.setChildDisabled('#refresh', true);
         }
     },
 
@@ -586,8 +617,8 @@ Ext.define('Ext.toolbar.Paging', {
         }
     },
     
-    getStoreListeners: function() {
-        return {
+<span id='Ext-toolbar-Paging-method-getStoreListeners'>    getStoreListeners: function() {
+</span>        return {
             beforeload: this.beforeLoad,
             load: this.onLoad,
             exception: this.onLoadError
@@ -610,8 +641,8 @@ Ext.define('Ext.toolbar.Paging', {
         this.bindStore(store);
     },
 
-    // private
-    onDestroy : function(){
+<span id='Ext-toolbar-Paging-method-onDestroy'>    // @private
+</span>    onDestroy : function(){
         this.unbind();
         this.callParent();
     }

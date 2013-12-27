@@ -1,3 +1,23 @@
+/*
+This file is part of Ext JS 4.2
+
+Copyright (c) 2011-2013 Sencha Inc
+
+Contact:  http://www.sencha.com/contact
+
+GNU General Public License Usage
+This file may be used under the terms of the GNU General Public License version 3.0 as
+published by the Free Software Foundation and appearing in the file LICENSE included in the
+packaging of this file.
+
+Please review the following information to ensure the GNU General Public License version 3.0
+requirements will be met: http://www.gnu.org/copyleft/gpl.html.
+
+If you are unsure which license is appropriate for your use, please contact the sales department
+at http://www.sencha.com/contact.
+
+Build date: 2013-05-16 14:36:50 (f9be68accb407158ba2b1be2c226a6ce1f649314)
+*/
 /**
  * @author Ed Spencer
  *
@@ -79,6 +99,12 @@
  *         </nested>
  *     </deeply>
  *
+ * If this Reader is being used by a {@link Ext.data.TreeStore TreeStore} to read tree-structured data in which records
+ * are nested as descendant nodes of other records, then this lenient behaviour must be overridden by using a more specific
+ * child node selector as your {@link #record} selector which will not select all descendants, such as:
+ *
+ *    record: '>user'
+ *
  * # Response metadata
  *
  * The server can return additional data in its response, such as the {@link #totalProperty total number of records} and
@@ -129,6 +155,34 @@ Ext.define('Ext.data.reader.Xml', {
     /**
      * @cfg {String} record (required)
      * The DomQuery path to the repeated element which contains record information.
+     *
+     * By default, the elements which match the selector may be nested at any level below the {@link #root}
+     *
+     * If this Reader is being used by a {@link Ext.data.TreeStore TreeStore} to read tree-structured data,
+     * then only first generation child nodes of the root element must be selected, so the record selector must be
+     * specified with a more specific selector which will not select all descendants. For example:
+     *
+     *    record: '>node'
+     *
+     */
+
+    /**
+     * @cfg {String} namespace
+     * A namespace prefix that will be prepended to the field name when reading a
+     * field from an XML node.  Take, for example, the following Model:
+     * 
+     *     Ext.define('Foo', {
+     *         extend: 'Ext.data.Model',
+     *         fields: ['bar', 'baz']
+     *     });
+     *     
+     * The reader would need to be configured with a namespace of 'n' in order to read XML
+     * data in the following format:
+     * 
+     *     <foo>
+     *         <n:bar>bar</n:bar>
+     *         <n:baz>baz</n:baz>
+     *     </foo>
      */
 
     /**
@@ -155,8 +209,17 @@ Ext.define('Ext.data.reader.Xml', {
     },
 
     getNodeValue: function(node) {
-        if (node && node.firstChild) {
-            return node.firstChild.nodeValue;
+        if (node) {
+            // overcome a limitation of maximum textnode size
+            // http://reference.sitepoint.com/javascript/Node/normalize
+            // https://developer.mozilla.org/En/DOM/Node.normalize
+            if (typeof node.normalize === 'function') {
+                node.normalize();
+            }
+            node = node.firstChild;
+            if (node) {
+                return node.nodeValue;
+            }
         }
         return undefined;
     },
@@ -279,8 +342,10 @@ Ext.define('Ext.data.reader.Xml', {
      * This is used by buildExtractors to create optimized on extractor function which converts raw data into model instances.
      */
     createFieldAccessExpression: function(field, fieldVarName, dataName) {
-        var selector = field.mapping || field.name,
-            result;
+        var namespace = this.namespace,
+            selector, result;
+
+        selector = field.mapping || ((namespace ? namespace + '|' : '') + field.name); 
 
         if (typeof selector === 'function') {
             result = fieldVarName + '.mapping(' + dataName + ', this)';

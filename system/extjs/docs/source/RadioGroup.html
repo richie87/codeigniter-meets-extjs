@@ -68,6 +68,10 @@ Ext.define('Ext.form.RadioGroup', {
     extend: 'Ext.form.CheckboxGroup',
     alias: 'widget.radiogroup',
 
+    requires: [
+        'Ext.form.field.Radio'
+    ],
+
 <span id='Ext-form-RadioGroup-cfg-items'>    /**
 </span>     * @cfg {Ext.form.field.Radio[]/Object[]} items
      * An Array of {@link Ext.form.field.Radio Radio}s or Radio config objects to arrange in the group.
@@ -87,18 +91,18 @@ Ext.define('Ext.form.RadioGroup', {
     blankText : 'You must select one item in this group',
     //&lt;/locale&gt;
 
-    // private
-    defaultType : 'radiofield',
+<span id='Ext-form-RadioGroup-cfg-defaultType'>    // private
+</span>    defaultType : 'radiofield',
 
-    // private
-    groupCls : Ext.baseCSSPrefix + 'form-radio-group',
+<span id='Ext-form-RadioGroup-property-groupCls'>    // private
+</span>    groupCls : Ext.baseCSSPrefix + 'form-radio-group',
 
-    getBoxes: function(query) {
-        return this.query('[isRadio]' + (query||''));
+<span id='Ext-form-RadioGroup-method-getBoxes'>    getBoxes: function(query) {
+</span>        return this.query('[isRadio]' + (query||''));
     },
     
-    checkChange: function() {
-        var value = this.getValue(),
+<span id='Ext-form-RadioGroup-method-checkChange'>    checkChange: function() {
+</span>        var value = this.getValue(),
             key = Ext.Object.getKeys(value)[0];
             
         // If the value is an array we skip out here because it's during a change

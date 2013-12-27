@@ -23,6 +23,10 @@ Ext.define('Ext.view.BoundList', {
     alias: 'widget.boundlist',
     alternateClassName: 'Ext.BoundList',
     requires: ['Ext.layout.component.BoundList', 'Ext.toolbar.Paging'],
+    
+    mixins: {
+        queryable: 'Ext.Queryable'
+    },
 
 <span id='Ext-view-BoundList-cfg-pageSize'>    /**
 </span>     * @cfg {Number} [pageSize=0]
@@ -31,7 +35,7 @@ Ext.define('Ext.view.BoundList', {
      * {@link Ext.data.Operation#limit limit} parameters.
      */
     pageSize: 0,
-    
+
 <span id='Ext-view-BoundList-cfg-displayField'>    /**
 </span>     * @cfg {String} [displayField=&quot;&quot;]
      * The field from the store to show in the view.
@@ -43,25 +47,25 @@ Ext.define('Ext.view.BoundList', {
      * than zero and the BoundList has been rendered.
      */
 
-    // private overrides
-    baseCls: Ext.baseCSSPrefix + 'boundlist',
-    itemCls: Ext.baseCSSPrefix + 'boundlist-item',
-    listItemCls: '',
-    shadow: false,
-    trackOver: true,
-    refreshed: 0,
-    
-    // This Component is used as a popup, not part of a complex layout. Display data immediately.
-    deferInitialRefresh: false,
+<span id='Ext-view-BoundList-cfg-baseCls'>    // private overrides
+</span>    baseCls: Ext.baseCSSPrefix + 'boundlist',
+<span id='Ext-view-BoundList-cfg-itemCls'>    itemCls: Ext.baseCSSPrefix + 'boundlist-item',
+</span><span id='Ext-view-BoundList-property-listItemCls'>    listItemCls: '',
+</span><span id='Ext-view-BoundList-cfg-shadow'>    shadow: false,
+</span><span id='Ext-view-BoundList-cfg-trackOver'>    trackOver: true,
+</span><span id='Ext-view-BoundList-property-refreshed'>    refreshed: 0,
+</span>
+<span id='Ext-view-BoundList-cfg-deferInitialRefresh'>    // This Component is used as a popup, not part of a complex layout. Display data immediately.
+</span>    deferInitialRefresh: false,
 
-    componentLayout: 'boundlist',
-
-    childEls: [
-        'listEl'
+<span id='Ext-view-BoundList-cfg-componentLayout'>    componentLayout: 'boundlist',
+</span>
+<span id='Ext-view-BoundList-property-childEls'>    childEls: [
+</span>        'listEl'
     ],
 
-    renderTpl: [
-        '&lt;div id=&quot;{id}-listEl&quot; class=&quot;{baseCls}-list-ct&quot; style=&quot;overflow:auto&quot;&gt;&lt;/div&gt;',
+<span id='Ext-view-BoundList-cfg-renderTpl'>    renderTpl: [
+</span>        '&lt;div id=&quot;{id}-listEl&quot; class=&quot;{baseCls}-list-ct ', Ext.dom.Element.unselectableCls, '&quot; style=&quot;overflow:auto&quot;&gt;&lt;/div&gt;',
         '{%',
             'var me=values.$comp, pagingToolbar=me.pagingToolbar;',
             'if (pagingToolbar) {',
@@ -114,9 +118,11 @@ Ext.define('Ext.view.BoundList', {
         var me = this,
             baseCls = me.baseCls,
             itemCls = me.itemCls;
-            
+
         me.selectedItemCls = baseCls + '-selected';
-        me.overItemCls = baseCls + '-item-over';
+        if (me.trackOver) {
+            me.overItemCls = baseCls + '-item-over';
+        }
         me.itemSelector = &quot;.&quot; + itemCls;
 
         if (me.floating) {
@@ -127,11 +133,11 @@ Ext.define('Ext.view.BoundList', {
             // should be setting aria-posinset based on entire set of data
             // not filtered set
             me.tpl = new Ext.XTemplate(
-                '&lt;ul&gt;&lt;tpl for=&quot;.&quot;&gt;',
-                    '&lt;li role=&quot;option&quot; class=&quot;' + itemCls + '&quot;&gt;' + me.getInnerTpl(me.displayField) + '&lt;/li&gt;',
+                '&lt;ul class=&quot;' + Ext.plainListCls + '&quot;&gt;&lt;tpl for=&quot;.&quot;&gt;',
+                    '&lt;li role=&quot;option&quot; unselectable=&quot;on&quot; class=&quot;' + itemCls + '&quot;&gt;' + me.getInnerTpl(me.displayField) + '&lt;/li&gt;',
                 '&lt;/tpl&gt;&lt;/ul&gt;'
             );
-        } else if (Ext.isString(me.tpl)) {
+        } else if (!me.tpl.isTemplate) {
             me.tpl = new Ext.XTemplate(me.tpl);
         }
 
@@ -142,8 +148,8 @@ Ext.define('Ext.view.BoundList', {
         me.callParent();
     },
 
-    beforeRender: function() {
-        var me = this;
+<span id='Ext-view-BoundList-method-beforeRender'>    beforeRender: function() {
+</span>        var me = this;
 
         me.callParent(arguments);
 
@@ -154,33 +160,27 @@ Ext.define('Ext.view.BoundList', {
         }
     },
 
-<span id='Ext-view-BoundList-method-getBubbleTarget'>    /**
-</span>     * @private
-     * Boundlist-specific implementation of the getBubbleTarget used by {@link Ext.AbstractComponent#up} method.
-     * This links to the owning input field so that the FocusManager, when receiving notification of a hide event,
-     * can find a focusable parent.
-     */
-    getBubbleTarget: function() {
-        return this.pickerField;
+<span id='Ext-view-BoundList-method-getRefOwner'>    getRefOwner: function() {
+</span>        return this.pickerField || this.callParent();
     },
 
-    getRefItems: function() {
-        return this.pagingToolbar ? [ this.pagingToolbar ] : [];
+<span id='Ext-view-BoundList-method-getRefItems'>    getRefItems: function() {
+</span>        return this.pagingToolbar ? [ this.pagingToolbar ] : [];
     },
 
-    createPagingToolbar: function() {
-        return Ext.widget('pagingtoolbar', {
+<span id='Ext-view-BoundList-method-createPagingToolbar'>    createPagingToolbar: function() {
+</span>        return Ext.widget('pagingtoolbar', {
             id: this.id + '-paging-toolbar',
             pageSize: this.pageSize,
-            store: this.store,
+            store: this.dataSource,
             border: false,
             ownerCt: this,
             ownerLayout: this.getComponentLayout()
         });
     },
 
-    // Do the job of a container layout at this point even though we are not a Container.
-    // TODO: Refactor as a Container.
+<span id='Ext-view-BoundList-method-finishRenderChildren'>    // Do the job of a container layout at this point even though we are not a Container.
+</span>    // TODO: Refactor as a Container.
     finishRenderChildren: function () {
         var toolbar = this.pagingToolbar;
 
@@ -190,36 +190,59 @@ Ext.define('Ext.view.BoundList', {
             toolbar.finishRender();
         }
     },
-    
-    refresh: function(){
-        var me = this,
-            toolbar = me.pagingToolbar;
-        
+
+<span id='Ext-view-BoundList-method-refresh'>    refresh: function(){
+</span>        var me = this,
+            tpl = me.tpl,
+            toolbar = me.pagingToolbar,
+            rendered = me.rendered;
+
+        // Allow access to the context for XTemplate scriptlets
+        tpl.field = me.pickerField;
+        tpl.store = me.store;
         me.callParent();
+        tpl.field =  tpl.store = null;
+
         // The view removes the targetEl from the DOM before updating the template
         // Ensure the toolbar goes to the end
-        if (me.rendered &amp;&amp; toolbar &amp;&amp; toolbar.rendered &amp;&amp; !me.preserveScrollOnRefresh) {
+        if (rendered &amp;&amp; toolbar &amp;&amp; toolbar.rendered &amp;&amp; !me.preserveScrollOnRefresh) {
             me.el.appendChild(toolbar.el);
-        }  
-    },
+        }
 
-    bindStore : function(store, initial) {
-        var toolbar = this.pagingToolbar;
-            
-        this.callParent(arguments);
-        if (toolbar) {
-            toolbar.bindStore(this.store, initial);
+        // IE6 strict can sometimes have repaint issues when showing
+        // the list from a remote data source
+        if (rendered &amp;&amp; Ext.isIE6 &amp;&amp; Ext.isStrict) {
+            me.listEl.repaint();
         }
     },
 
-    getTargetEl: function() {
-        return this.listEl || this.el;
+<span id='Ext-view-BoundList-method-bindStore'>    bindStore : function(store, initial) {
+</span>        var toolbar = this.pagingToolbar;
+
+        this.callParent(arguments);
+        if (toolbar) {
+            toolbar.bindStore(store, initial);
+        }
+    },
+
+<span id='Ext-view-BoundList-method-getTargetEl'>    getTargetEl: function() {
+</span>        return this.listEl || this.el;
     },
 
 <span id='Ext-view-BoundList-method-getInnerTpl'>    /**
 </span>     * A method that returns the inner template for displaying items in the list.
      * This method is useful to override when using a more complex display value, for example
      * inserting an icon along with the text.
+     *
+     * The XTemplate is created with a reference to the owning form field in the `field` property to provide access
+     * to context. For example to highlight the currently typed value, the getInnerTpl may be configured into a 
+     * ComboBox as part of the {@link Ext.form.field.ComboBox#listConfig listConfig}:
+     *
+     *    listConfig: {
+     *        getInnerTpl: function() {
+     *            return '{[values.name.replace(this.field.getRawValue(), &quot;&lt;b&gt;&quot; + this.field.getRawValue() + &quot;&lt;/b&gt;&quot;)]}';
+     *        }
+     *    }
      * @param {String} displayField The {@link #displayField} for the BoundList.
      * @return {String} The inner template
      */
@@ -227,8 +250,8 @@ Ext.define('Ext.view.BoundList', {
         return '{' + displayField + '}';
     },
 
-    onDestroy: function() {
-        Ext.destroyMembers(this, 'pagingToolbar', 'listEl');
+<span id='Ext-view-BoundList-method-onDestroy'>    onDestroy: function() {
+</span>        Ext.destroyMembers(this, 'pagingToolbar', 'listEl');
         this.callParent();
     }
 });
