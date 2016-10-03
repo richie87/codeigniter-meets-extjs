@@ -4,8 +4,8 @@ CodeIgniter meets ExtJS
 "CodeIgniter meets ExtJS" is a project, which CAN show you how to use CodeIgniter together with ExtJS. I followed the MVC (Model View Controller) pattern and i am sure, even for newcomers the structure is easy to understand. It is also easy and no problem to update the core files (CodeIgniter and ExtJS), without touching the application structure.
 
 ##Demo
-A demo version is available here: http://github.richard-jaeger.net/codeigniter-meets-extjs/
-Username: admin
+A demo version is available here: http://github.richard-jaeger.net/codeigniter-meets-extjs/  
+Username: admin  
 Password: password
 
 ##Installation
