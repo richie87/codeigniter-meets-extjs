@@ -5,6 +5,8 @@ CodeIgniter meets ExtJS
 
 ##Demo
 A demo version is available here: http://github.richard-jaeger.net/codeigniter-meets-extjs/
+Username: admin
+Password: password
 
 ##Installation
 To use this application, you have to extract all the files into one folder. For the user data (auth module) and example data (movies) you need to import the `ci_meets_extjs.sql` file into one of your database and it's important to change the DB Connect-Data at `application/backend/config/database.php`
